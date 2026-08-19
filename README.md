@@ -1,2 +1,2 @@
-# Tendencias_Ciência_Da_Computação
-Atividades disciplina tendências em ciencia da computação
+# Tendencias Ciência Da Computação
+Atividades disciplina tendências em ciência da computação
