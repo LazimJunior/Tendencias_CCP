@@ -44,23 +44,23 @@ Formalmente, o treinamento é definido como um problema de otimização minimax,
 Aplicações comuns incluem geração de imagens fotorrealistas, síntese de voz, super resolução de imagem, data augmentation e, também, a base técnica por trás de deepfakes. Um desafio conhecido no treinamento é a instabilidade, especialmente o mode collapse, quando o Gerador passa a produzir uma variedade limitada de saídas.
 
 ### Análise
-**O que funcionou:** a definição técnica está correta - Gerador, Discriminador, treinamento adversarial, formulação minimax, equilíbrio de Nash e mode collapse são todos conceitos apresentados sem erro.
-**O que faltou:** nenhuma conexão com o Problema definido na Etapa 1. A palavra "fake news" não aparece uma vez. O papel do Discriminador como possível detector de conteúdo sintético - núcleo do problema escolhido - não é mencionado.
-**O que ficou genérico:** a resposta é uma explicação de livro-texto que serviria para qualquer pessoa, em qualquer contexto, sem adequação ao público declarado no Contexto (início de graduação em Tecnologia).
-**O que poderia ser melhor:** definir papel (professor/especialista), público explícito, objetivo conectado ao problema real, formato de saída e restrição de tamanho.
+**O que funcionou:** a definição técnica está correta - Gerador, Discriminador, treinamento adversarial, formulação minimax, equilíbrio de Nash e mode collapse são todos conceitos apresentados sem erro.<br><br>
+**O que faltou:** nenhuma conexão com o Problema definido na Etapa 1. A palavra "fake news" não aparece uma vez. O papel do Discriminador como possível detector de conteúdo sintético - núcleo do problema escolhido - não é mencionado.<br><br>
+**O que ficou genérico:** a resposta é uma explicação de livro-texto que serviria para qualquer pessoa, em qualquer contexto, sem adequação ao público declarado no Contexto (início de graduação em Tecnologia).<br><br>
+**O que poderia ser melhor:** definir papel (professor/especialista), público explícito, objetivo conectado ao problema real, formato de saída e restrição de tamanho.<br><br>
 
 ---
 
 ## Prompt 2
 
 ### Alterações realizadas
-**Papel:** adicionado - "professor de Ciência da Computação especializado em Inteligência Artificial".
-**Contexto:** não incluído nesta versão (fica implícito apenas pelo público).
-**Objetivo:** adicionado - conectar a explicação de GANs ao controle de fake news.
-**Público:** adicionado - estudantes iniciantes de graduação em Tecnologia.
-**Formato:** parcial - lista numerada, sem subtítulos nem tabela.
-**Restrições:** adicionado - linguagem acessível, limite de ~500 palavras.
-**Critérios de qualidade:** não incluído nesta versão.
+**Papel:** adicionado - "professor de Ciência da Computação especializado em Inteligência Artificial".<br><br>
+**Contexto:** não incluído nesta versão (fica implícito apenas pelo público).<br><br>
+**Objetivo:** adicionado - conectar a explicação de GANs ao controle de fake news.<br><br>
+**Público:** adicionado - estudantes iniciantes de graduação em Tecnologia.<br><br>
+**Formato:** parcial - lista numerada, sem subtítulos nem tabela.<br><br>
+**Restrições:** adicionado - linguagem acessível, limite de ~500 palavras.<br><br>
+**Critérios de qualidade:** não incluído nesta versão.<br><br>
 
 ### Prompt
 ```text
@@ -210,12 +210,10 @@ Existe uma limitação técnica importante: um Discriminador aprende a reconhece
 
 ## Validação
 
-Como qualquer resposta gerada por IA, os Resultados 1 3 foram checados antes de serem incorporados ao trabalho:
-
-**Conceitos verificáveis:** a arquitetura Gerador/Discriminador, o treinamento adversarial e a formulação minimax correspondem ao artigo original de Ian Goodfellow (2014, "Generative Adversarial Networks") - informação amplamente documentada.
-**Afirmação de maior risco (Resultado 2):** a ideia de que "o Discriminador pode ser reaproveitado como detector" é tecnicamente válida, mas incompleta sem a ressalva sobre generalização - por isso essa lacuna foi tratada como prioridade no Prompt 3, e não apenas aceita.
-**Limitação técnica (Resultado 3):** a dificuldade de generalização de detectores treinados contra um gerador específico é um problema documentado na literatura de forense de mídia sintética (deepfake detection), e o fato de que modelos de difusão dominam a geração de imagem atualmente (em vez de GANs) é consistente com o estado da técnica. Essa é a checagem mais importante do trabalho: sem ela, a conclusão do Prompt 2 ficaria tecnicamente incorreta por generalização indevida.
-**Escopo texto vs. mídia sintética:** confirmado que GANs não são a ferramenta padrão para detecção de fake news textual - esse tipo de checagem usa classificadores de linguagem, não redes adversariais de imagem/áudio.
+**Conceitos verificáveis:** a arquitetura Gerador/Discriminador, o treinamento adversarial e a formulação minimax correspondem ao artigo original de Ian Goodfellow (2014, "Generative Adversarial Networks") - informação amplamente documentada.<br><br>
+**Afirmação de maior risco (Resultado 2):** a ideia de que "o Discriminador pode ser reaproveitado como detector" é tecnicamente válida, mas incompleta sem a ressalva sobre generalização - por isso essa lacuna foi tratada como prioridade no Prompt 3, e não apenas aceita.<br><br>
+**Limitação técnica (Resultado 3):** a dificuldade de generalização de detectores treinados contra um gerador específico é um problema documentado na literatura de forense de mídia sintética (deepfake detection), e o fato de que modelos de difusão dominam a geração de imagem atualmente (em vez de GANs) é consistente com o estado da técnica. Essa é a checagem mais importante do trabalho: sem ela, a conclusão do Prompt 2 ficaria tecnicamente incorreta por generalização indevida.<br><br>
+**Escopo texto vs. mídia sintética:** confirmado que GANs não são a ferramenta padrão para detecção de fake news textual - esse tipo de checagem usa classificadores de linguagem, não redes adversariais de imagem/áudio.<br><br>
 
 ---
 
