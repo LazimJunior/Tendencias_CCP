@@ -2,7 +2,6 @@
 
 ## Identificação
 - Nome: Lazim Francisco de Oliveira Junior
-- Turma:
 - Data: 03/09/2026
 - Ferramenta de IA utilizada: Claude (Anthropic) — Claude Sonnet 5
 
