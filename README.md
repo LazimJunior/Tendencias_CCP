@@ -15,8 +15,8 @@ Cada pasta reúne as atividades práticas da unidade correspondente.
 
 | Pasta | Unidade | Status |
 |---|---|---|
-| [`Unidade_1/`](./Unidade_1) | I — Fundamentos | Em andamento |
-| `Unidade_2/` | II — Programação Assistida por IA | A criar |
+| [`Unidade_1/`](./Unidade_1) | I — Fundamentos | Concluída |
+| `Unidade_2/` | II — Programação Assistida por IA | Em andamento |
 | `Unidade_3/` | III — Low Code / No Code | A criar |
 | `Unidade_4/` | IV — Agentes e Ética | A criar |
 
