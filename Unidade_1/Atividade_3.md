@@ -1,9 +1,9 @@
 # Atividade Refinamento de Prompts
 
 ## Identificação
-Nome: Lazim Francisco de Oliveira Junior
-Data: 03/09/2026
-Ferramenta de IA utilizada: Claude (Anthropic) Claude Sonnet 5
+Nome: Lazim Francisco de Oliveira Junior<br><br>
+Data: 03/09/2026<br><br>
+Ferramenta de IA utilizada: Claude (Anthropic) Claude Sonnet 5<br><br>
 
 ---
 
