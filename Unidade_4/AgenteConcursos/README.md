@@ -18,6 +18,7 @@ Agente de IA construído no **Claude Console (Managed Agents)**. Ele lê o edita
 | Teste de mutação | ✅ Executado | 7/7 defeitos detectados ([log](docs/resultados/mutacao.log)) |
 | Agente no Console (system prompt, skill, ambiente) | ✅ Sessão real executada | Edital fictício de ponta a ponta: cobertura 100% e 27 citações conferidas ([detalhes](docs/validacao.md#sessão-real-do-agente-23112026)) |
 | Worker self-hosted no WSL | ✅ Validado | Ubuntu 26.04: vault montado, C: fora do alcance do agente, worker conectado |
+| Segurança do vault (mitigações M1–M3) | ✅ Validada em campo | Sessão de ataque controlado: 5 de 5 verificações aprovadas ([detalhes](docs/validacao-em-campo.md#125-validação-das-mitigações-na-máquina-real)) |
 | Painel do Obsidian (Dataview) | ✅ Validado no app | Obsidian 1.15.1 + Dataview 0.5.68, 8 verificações com capturas ([detalhes](docs/validacao.md#validação-no-obsidian-23112026)) |
 
 ---
