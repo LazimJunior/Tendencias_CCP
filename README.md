@@ -16,8 +16,8 @@ Cada pasta reúne as atividades práticas da unidade correspondente.
 | Pasta | Unidade | Status |
 |---|---|---|
 | [`Unidade_1/`](./Unidade_1) | I — Fundamentos | Concluída |
-| `Unidade_2/` | II — Programação Assistida por IA | Em andamento |
-| `Unidade_3/` | III — Low Code / No Code | A criar |
+| `Unidade_2/` | II — Programação Assistida por IA | Concluída |
+| `Unidade_3/` | III — Low Code / No Code | Concluída |
 | [`Unidade_4/`](./Unidade_4) | IV — Agentes e Ética | Em andamento: [Agente de Estudos para Concursos](./Unidade_4/AgenteConcursos) |
 
 ## Conteúdo programático
