@@ -194,6 +194,7 @@ Até esta data, o projeto tinha 29 testes automatizados que rodam sem conta e se
 | 16:19:59 | Resposta final da SEDES |
 | 16:22 | Eventos das duas sessões exportados |
 | 16:22–16:45 | Conferência independente da SEDES e do OCR. D11 corrigido com uma trava no `iniciar-worker.sh` (SEG-05) |
+| 16:41 | `.agente-setup` e `_validacao` movidas para fora do vault (R3 resolvido) |
 
 ## 6. Etapa A: Painel do Obsidian
 
@@ -625,7 +626,7 @@ Além disso, os comandos do guia passaram a usar `Authorization: Bearer` (o form
 |---|---|---|---|
 | R1 | **A chave do ambiente pode ser lida pelo próprio agente.** O worker e as ferramentas do agente rodam com o mesmo usuário Linux, e a documentação avisa que as chamadas de ferramenta conseguem ler o que está no host do worker | Média. A sessão DATAPREV mostrou que o confinamento a `/workspace` vale só para as ferramentas de arquivo: o `read` e o `write` em `/tmp` foram recusados, mas o `bash` gravou em `/tmp` sem restrição | **Risco aceito** (§12.7) |
 | R2 | **O vault é uma ponte para o Windows.** O agente pode escrever em `.obsidian/` (plugins) e em blocos `dataviewjs` de qualquer nota, e o Obsidian executa esse código no Windows quando a nota é aberta, fora do isolamento do WSL | **Alta: confirmado** no teste do §12.3 | M1, M2, M3 e M4 implementadas e validadas (§12.4 a §12.6) |
-| R3 | **A pasta `.agente-setup` ficou dentro do vault**, então o agente a enxergou (chamada 2) | **Alta: aconteceu.** Na sessão SEDES, depois do D11, o agente rodou o `concurso.py` dessa cópia em vez da skill instalada. Ele conferiu o código antes, e a cópia era legítima. Mesmo assim, o agente executou um script que não veio da API de Skills | Não contém chaves. A pasta sai do vault depois da instalação, e o D11, que levou o agente até ela, foi corrigido |
+| R3 | **A pasta `.agente-setup` ficou dentro do vault**, então o agente a enxergou (chamada 2) | **Alta: aconteceu.** Na sessão SEDES, depois do D11, o agente rodou o `concurso.py` dessa cópia em vez da skill instalada. Ele conferiu o código antes, e a cópia era legítima. Mesmo assim, o agente executou um script que não veio da API de Skills | Não contém chaves. ✅ A pasta saiu do vault às 16:41 de 23/11, junto com `_validacao`, e o D11, que levou o agente até ela, foi corrigido |
 | R4 | **`setx` deixa a chave de API em texto no histórico do PowerShell** | Alta | O guia agora usa `Read-Host -AsSecureString`, que não passa pela linha de comando |
 | R5 | **As ferramentas do agente rodam sem pedir confirmação** (política `always_allow`, o padrão) | Alta (lido na sessão) | Aceitável dentro de `/workspace`. Para apagar pastas, o system prompt já exige confirmação explícita (caso I8, ainda não executado) |
 | R6 | **A sessão fica guardada na Anthropic** | Alta | Pela documentação, a transcrição persiste até ser apagada. Depois da apresentação, apagar a sessão de teste ou arquivá-la |
