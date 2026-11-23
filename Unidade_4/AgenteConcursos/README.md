@@ -13,7 +13,7 @@ Agente de IA construído no **Claude Console (Managed Agents)**. Ele lê o edita
 
 | Componente | Estado | Comprovação |
 |---|---|---|
-| Núcleo determinístico (`concurso.py`): extração, segmentação, cobertura, citações, retificação e exportações | ✅ Testado | 30/30 testes passando ([log](docs/resultados/testes.log)) |
+| Núcleo determinístico (`concurso.py`): extração, segmentação, cobertura, citações, retificação e exportações | ✅ Testado | 31/31 testes passando ([log](docs/resultados/testes.log)) |
 | Demonstração ponta a ponta, sem IA | ✅ Executada | [log](docs/resultados/demo.log) |
 | Teste de mutação | ✅ Executado | 6/6 defeitos detectados ([log](docs/resultados/mutacao.log)) |
 | Agente no Console (system prompt, skill, ambiente) | ✅ Sessão real executada | Edital fictício de ponta a ponta: cobertura 100% e 27 citações conferidas ([detalhes](docs/validacao.md#sessão-real-do-agente-23112026)) |
@@ -51,15 +51,16 @@ AgenteConcursos/
 │   ├── system-prompt.md             ·  system prompt em 8 partes
 │   ├── agent.md                     ·  definição do agente (formato ant apply)
 │   ├── environment.yaml             ·  ambiente self-hosted
+│   ├── api/                         ·  JSON para criar ambiente, agente e sessão pela API
 │   └── skills/agente-concursos/
 │       ├── SKILL.md                 ·  procedimento dos módulos M1–M8
 │       └── scripts/concurso.py      ·  núcleo determinístico (CLI, 9 subcomandos)
-├── worker/setup-wsl.sh              ← prepara o Ubuntu/WSL como worker isolado
+├── worker/setup-wsl.sh              ← prepara o Ubuntu/WSL como worker isolado (cria gravar-chave.sh e iniciar-worker.sh)
 ├── cliente/sessao.py                ← chat pelo terminal com teto de gasto
 ├── vault-modelo/_perfil-estudos.md  ← perfil lido no início de cada sessão
 ├── demo/                            ← editais fictícios + execução sem IA
-├── tests/                           ← 30 casos + teste de mutação
-├── docs/                            ← instalação, engenharia de prompt, validação, logs
+├── tests/                           ← 31 casos + teste de mutação
+├── docs/                            ← instalação, engenharia de prompt, validação, validação em campo, logs
 └── apresentacao/                    ← slides (Marp) e roteiro
 ```
 
@@ -370,7 +371,7 @@ Comando: `python -m unittest discover -s tests -v`. Log em [docs/resultados/test
 | CEN-09 | Reexportação com progresso marcado | ✅ Nenhum `[x]` perdido |
 | CEN-10 | Mesma entrada, mesma saída | ✅ Arquivos idênticos byte a byte |
 
-Além desses dez, 20 casos cobrem as regras de cada camada (REG-01 a REG-14) e a configuração e segurança (SEG-01 a SEG-06). **30/30 passando.**
+Além desses dez, 21 casos cobrem as regras de cada camada (REG-01 a REG-14) e a configuração e segurança (SEG-01 a SEG-07). **31/31 passando.**
 
 **Teste de mutação:** cada proteção foi desligada, uma por vez, numa cópia do script. A suíte detectou **6 de 6 defeitos**. Na primeira rodada, a quebra da regra de numeração passou despercebida, o que levou à criação do caso REG-03.
 
@@ -378,14 +379,14 @@ Além desses dez, 20 casos cobrem as regras de cada camada (REG-01 a REG-14) e a
 
 **Validado no Obsidian** (23/11/2026): Painel, embeds do verticalizado, marcação refletida no Painel e links da Ficha para o Edital Integral. Capturas em [docs/resultados/obsidian](docs/resultados/obsidian).
 
-**Sessão real** (23/11/2026): o agente rodou no Console com o worker no WSL, processou o edital fictício e gravou o material no vault. Cobertura 100%, citações conferidas e a pasta da demonstração intacta. A sessão revelou um defeito de formatação na Ficha, corrigido e coberto pelo REG-14. Os passos para rodá-los manualmente estão em [docs/instalacao.md](docs/instalacao.md) (I1–I8).
+**Sessão real** (23/11/2026): o agente rodou no Console com o worker no WSL, processou o edital fictício e gravou o material no vault em 1 min 42 s, por **US$ 0,27**. Cobertura 100%, citações conferidas e a pasta da demonstração intacta. A validação revelou 3 defeitos (formatação da Ficha, gravação da chave do worker e o detector de chaves), todos corrigidos e cobertos pelos casos REG-14, SEG-07 e SEG-04. Relatório completo: **[docs/validacao-em-campo.md](docs/validacao-em-campo.md)**. Os passos para rodá-los manualmente estão em [docs/instalacao.md](docs/instalacao.md) (I1–I8).
 
 ## 15. Vantagens e limitações
 
 **Vantagens**
 1. **Fidelidade comprovável:** o candidato não precisa confiar no modelo. A cobertura prova que o verticalizado tem todo o texto do edital, e as citações provam de onde veio cada dado da ficha.
 2. **Estudo num lugar só:** checklist, prioridade, anotações, questões, erros e revisões vivem no mesmo vault, atualizados pelo agente e pelo candidato.
-3. **Custo baixo e previsível:** a parte pesada roda no script, sem tokens. Pela tabela de preços (Sonnet 5.5 a US$ 2/US$ 10 por milhão de tokens, sessão a US$ 0,08 por hora ativa), a estimativa é da ordem de US$ 1 por edital, com teto por sessão.
+3. **Custo baixo e previsível:** a parte pesada roda no script, sem tokens. Pela tabela de preços (Sonnet 5.5 a US$ 2/US$ 10 por milhão de tokens, sessão a US$ 0,08 por hora ativa), a estimativa é da ordem de US$ 1 por edital, com teto por sessão. Medido na validação em campo: US$ 0,27 para o edital fictício de 4 páginas (edital real ainda sem medição).
 
 **Limitações**
 1. **Validação em um cenário só:** a integração rodou num notebook com um edital fictício. Managed Agents está em beta, e ainda falta testar editais reais e PDFs escaneados.
@@ -405,12 +406,13 @@ Além desses dez, 20 casos cobrem as regras de cada camada (REG-01 a REG-14) e a
 
 Guia detalhado: **[docs/instalacao.md](docs/instalacao.md)**. Versão curta:
 
-1. Criar a chave de API no Console e enviar a skill (`agente/skills/agente-concursos`) pela API de Skills.
-2. Criar o ambiente **self-hosted** no Console e gerar a environment key.
-3. Criar o agente: `claude-sonnet-5-5`, system prompt de `agente/system-prompt.md`, agent toolset e a skill.
-4. Instalar o Ubuntu no WSL e rodar `worker/setup-wsl.sh` com o caminho do vault. Depois, `~/iniciar-worker.sh`.
-5. No Obsidian, ativar o Dataview com JavaScript Queries e copiar `vault-modelo/_perfil-estudos.md`.
-6. Conversar pelo Console ou por `cliente/sessao.py`.
+1. Criar a chave de API no Console ("Em outro lugar") e enviar a skill (`agente/skills/agente-concursos`) pela API de Skills.
+2. Criar o ambiente **self-hosted** e o agente pela API, com os modelos de `agente/api/`.
+3. Instalar o Ubuntu no WSL, rodar `worker/setup-wsl.sh` com o caminho do vault, gerar a chave do ambiente no Console e gravá-la com `~/gravar-chave.sh`. Depois, `~/iniciar-worker.sh`.
+4. No Obsidian, ativar o Dataview com JavaScript Queries e copiar `vault-modelo/_perfil-estudos.md`.
+5. Conversar pelo Console, pela API (`agente/api/sessao.json`) ou por `cliente/sessao.py`.
+
+Esse caminho foi executado de ponta a ponta em 23/11/2026. O relatório completo, com comandos, saídas, capturas, problemas e custos, está em **[docs/validacao-em-campo.md](docs/validacao-em-campo.md)**.
 
 Rodar a validação no próprio computador (sem conta):
 

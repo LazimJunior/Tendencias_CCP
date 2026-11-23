@@ -1,0 +1,12 @@
+{
+ "agent": "agent_COLE_AQUI",
+ "environment_id": "env_COLE_AQUI",
+ "title": "Estudos para concurso",
+ "budget": {
+  "type": "limit",
+  "max_list_cost": {
+   "amount": "300",
+   "currency": "USD"
+  }
+ }
+}

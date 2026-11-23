@@ -4,7 +4,7 @@
 
 ```bash
 pip install -r requirements.txt
-python -m unittest discover -s tests -v   # 30 casos
+python -m unittest discover -s tests -v   # 31 casos
 python demo/demo.py                       # pipeline completo sobre um edital fictício
 python tests/mutacao.py                   # desliga proteções e confere se a suíte percebe
 ```
@@ -13,7 +13,7 @@ Os PDFs de teste são criados na hora por `demo/editais_ficticios.py`. Cada caso
 
 ## Resumo
 
-**30/30 casos passando** (Python 3.13, PyMuPDF, openpyxl). Log: [resultados/testes.log](resultados/testes.log).
+**31/31 casos passando** (Python 3.13, PyMuPDF 2.1, openpyxl). Log: [resultados/testes.log](resultados/testes.log).
 
 ## Cenários principais (CEN)
 
@@ -55,10 +55,11 @@ Os PDFs de teste são criados na hora por `demo/editais_ficticios.py`. Cada caso
 |---|---|
 | SEG-01 | `SKILL.md` aceito pela API de Skills (nome, descrição ≤ 1024 caracteres, sem XML) |
 | SEG-02 | System prompt com as 8 partes, na ordem |
-| SEG-03 | `agent.md` e `system-prompt.md` com o mesmo texto |
-| SEG-04 | Nenhuma credencial no repositório. `.gitignore` cobre `.env` e a chave do worker |
+| SEG-03 | `agent.md`, `agente/api/agente.json` e `system-prompt.md` com o mesmo texto |
+| SEG-04 | Nenhuma credencial no repositório, incluindo o formato `sk-ant-usr-` visto na validação em campo. `.gitignore` cobre `.env` e a chave do worker |
 | SEG-05 | Setup do WSL desliga o automount do `C:` e a execução de programas do Windows |
 | SEG-06 | Cliente com teto de gasto. Nome de pasta malicioso (`../../fora`) não grava fora da saída |
+| SEG-07 | `gravar-chave.sh` recusa texto que não é chave (nada é gravado), remove o `\r` do Windows, não mostra a chave e grava o arquivo com permissão 600. Nasceu de um problema real da validação em campo |
 
 ## Teste de mutação
 
@@ -81,7 +82,9 @@ A primeira execução de `demo/demo.py` reprovou duas citações que estavam cer
 
 ## Validação no Obsidian (23/11/2026)
 
-Ambiente: Windows 11, Obsidian 1.15.1, Dataview 0.5.68 com *Enable JavaScript Queries* ligado. Vault gerado por `demo/demo.py` a partir do edital fictício SEFIC-DF 2026.
+O relato completo da validação em máquina real, com comandos, saídas, capturas, problemas, segurança e custo, está em **[validacao-em-campo.md](validacao-em-campo.md)**. As tabelas abaixo são o resumo.
+
+Ambiente: Windows 10, Obsidian 1.15.1, Dataview 0.5.68 com *Enable JavaScript Queries* ligado. Vault gerado por `demo/demo.py` a partir do edital fictício SEFIC-DF 2026.
 
 | # | Verificação | Resultado | Evidência |
 |---|---|---|---|
@@ -109,6 +112,8 @@ Ambiente: Ubuntu 26.04 no WSL 2, `ant` 2.12.1, agente com `claude-sonnet-5-5` e 
 | AG-04 | A pasta da demonstração ficou intacta | ✅ Nenhum arquivo de `SEFIC-DF 2026 - Analista TI` mudou |
 | AG-05 | Alertas sobre o edital | ✅ O agente apontou que o item 4.1 cita um quadro que não está no PDF. Conferido: o PDF fictício não tem esse quadro (0 tabelas na página 2) |
 | AG-06 | Conta dos mínimos para não ser eliminado | ✅ Conferida à mão: 30, 46 e 78 acertos sem deixar item em branco |
+
+Sessão `sesn_01NjucVhopBAyHbvnmw1FWfK`: 18 chamadas de ferramenta, 13 chamadas ao modelo, 90 s de execução ativa, **US$ 0,27**. Linha do tempo em [resultados/campo/sessao-linha-do-tempo.md](resultados/campo/sessao-linha-do-tempo.md).
 
 **Defeito encontrado:** a Ficha saiu com a seção "Identificação" duas vezes. O `ficha.json` montado pelo agente repetiu a seção em dois pontos, e o script abria um bloco novo a cada troca de seção. O `concurso.py` passou a agrupar os campos por seção, na ordem da primeira aparição, e o caso REG-14 cobre a correção.
 

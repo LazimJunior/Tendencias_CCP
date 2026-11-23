@@ -34,12 +34,13 @@ test_REG05_ligaduras_e_caracteres_invisiveis_normalizados (test_02_camadas_e_reg
 test_REG06_hifenizacao_preserva_o_texto (test_02_camadas_e_regras.CamadaPerceptiva.test_REG06_hifenizacao_preserva_o_texto) ... ok
 test_SEG01_skill_respeita_o_formato_da_api (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG01_skill_respeita_o_formato_da_api) ... ok
 test_SEG02_system_prompt_tem_as_oito_partes (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG02_system_prompt_tem_as_oito_partes) ... ok
-test_SEG03_agent_md_usa_o_mesmo_system_prompt (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG03_agent_md_usa_o_mesmo_system_prompt) ... ok
+test_SEG03_agent_md_e_agente_json_usam_o_mesmo_system_prompt (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG03_agent_md_e_agente_json_usam_o_mesmo_system_prompt) ... ok
 test_SEG04_repositorio_sem_credenciais (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG04_repositorio_sem_credenciais) ... ok
 test_SEG05_worker_isolado_no_wsl (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG05_worker_isolado_no_wsl) ... ok
 test_SEG06_cliente_limita_gasto_e_exportacao_nao_sai_da_pasta (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG06_cliente_limita_gasto_e_exportacao_nao_sai_da_pasta) ... ok
+test_SEG07_chave_do_worker_so_e_gravada_se_for_chave (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG07_chave_do_worker_so_e_gravada_se_for_chave) ... ok
 
 ----------------------------------------------------------------------
-Ran 30 tests in 26.650s
+Ran 31 tests in 24.404s
 
 OK

@@ -33,7 +33,7 @@
 - Vieses: regras da banca só do edital, estimativas marcadas, questões rotuladas.
 
 ## Slide 7: Testes (1 min 30 s)
-- 30 testes automatizados, todos aprovados, sem precisar de conta nem internet.
+- 31 testes automatizados, todos aprovados, sem precisar de conta nem internet.
 - Teste de mutação: desligamos cada proteção de propósito e a suíte detectou as 6. Na primeira rodada uma passou, e isso gerou um teste novo.
 - Achado real: a ligadura "ﬁ" do PDF fazia citações corretas falharem. A demonstração encontrou o problema antes de um edital real encontrar.
 - (Opcional, 30 s) Demonstração ao vivo: `python demo/demo.py`.
@@ -59,7 +59,7 @@ Porque o estado do estudo está no Obsidian. Rodando local, o agente lê e grava
 Ele é instruído a nunca apagar sem confirmação, o script não sobrescreve progresso e o WSL não enxerga o resto do disco.
 
 **Quanto custa?**
-Na tabela atual, da ordem de US$ 1 por edital analisado com o Sonnet 5.5. A extração pesada roda no script, sem tokens. Cada sessão tem teto de gasto.
+Na tabela atual, da ordem de US$ 1 por edital analisado com o Sonnet 5.5. Na sessão real de validação, o edital fictício de 4 páginas custou US$ 0,27. A extração pesada roda no script, sem tokens. Cada sessão tem teto de gasto.
 
 **Funciona com qualquer banca?**
 O formato muda entre bancas, por isso os testes cobrem editais numerados, sem numeração e com anexos. Regras específicas (penalização, alternativas) sempre vêm do edital, nunca de suposição sobre a banca.

@@ -58,6 +58,26 @@ EOF
 fi
 chmod 600 "$HOME/.concurso-worker.env"
 
+echo "==> Script para gravar a chave do ambiente (sem mostrar na tela e sem ir para o historico)"
+cat > "$HOME/gravar-chave.sh" <<'EOF'
+#!/usr/bin/env bash
+# Uso: ~/gravar-chave.sh env_...   (depois cole SO a environment key quando ele pedir)
+set -euo pipefail
+ENV_ID="${1:?Informe o ID do ambiente (env_...)}"
+case "$ENV_ID" in env_*) ;; *) echo "ERRO: o ID do ambiente comeca com env_"; exit 1;; esac
+read -rsp "Cole so a environment key (clique direito) e tecle Enter: " K; echo
+K="${K//$'\r'/}"
+case "$K" in
+  sk-ant-*) ;;
+  *) echo "ERRO: isso nao e a chave (${#K} caracteres, comeca com '${K:0:6}'). Nada foi gravado."; exit 1;;
+esac
+umask 077
+printf 'export ANTHROPIC_ENVIRONMENT_ID="%s"\nexport ANTHROPIC_ENVIRONMENT_KEY="%s"\n' "$ENV_ID" "$K" > "$HOME/.concurso-worker.env"
+chmod 600 "$HOME/.concurso-worker.env"
+echo "ok: ${K:0:12}... (${#K} caracteres) gravada em ~/.concurso-worker.env"
+EOF
+chmod +x "$HOME/gravar-chave.sh"
+
 echo "==> Script para iniciar o worker"
 cat > "$HOME/iniciar-worker.sh" <<'EOF'
 #!/usr/bin/env bash
@@ -78,7 +98,8 @@ chmod +x "$HOME/iniciar-worker.sh"
 cat <<EOF
 
 PRONTO. Proximos passos:
-  1) Edite ~/.concurso-worker.env com o ID e a key do ambiente (Console > Environments).
+  1) Gere a key no Console (Ambientes > seu ambiente > Gerar chave de ambiente) e rode:
+       ~/gravar-chave.sh env_SEU_AMBIENTE      -> cole SO a key quando ele pedir
   2) No PowerShell do Windows: wsl --shutdown   (aplica o isolamento e a montagem)
   3) Abra o Ubuntu de novo e confira:
        ls /workspace/vault     -> deve listar as notas do seu vault
