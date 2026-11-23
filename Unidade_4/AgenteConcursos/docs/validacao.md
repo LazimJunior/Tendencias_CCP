@@ -4,7 +4,7 @@
 
 ```bash
 pip install -r requirements.txt
-python -m unittest discover -s tests -v   # 33 casos
+python -m unittest discover -s tests -v   # 39 casos
 python demo/demo.py                       # pipeline completo sobre um edital fictício
 python tests/mutacao.py                   # desliga proteções e confere se a suíte percebe
 ```
@@ -13,7 +13,7 @@ Os PDFs de teste são criados na hora por `demo/editais_ficticios.py`. Cada caso
 
 ## Resumo
 
-**33/33 casos passando** (Python 3.13, PyMuPDF 2.1, openpyxl). Log: [resultados/testes.log](resultados/testes.log).
+**39/39 casos passando** (Python 3.13, PyMuPDF 2.1, openpyxl). Log: [resultados/testes.log](resultados/testes.log).
 
 ## Cenários principais (CEN)
 
@@ -45,11 +45,17 @@ Os PDFs de teste são criados na hora por `demo/editais_ficticios.py`. Cada caso
 | REG-08 | Decisória | Bloco idêntico em outro cargo não esconde um tópico apagado |
 | REG-09 | Decisória | "12 de outubro de 2026" equivale a 12/10/2026. 19/10 é rejeitado |
 | REG-10 | Decisória | `comparar` aponta tópico alterado, incluído e removido |
-| REG-11 | Executiva | Os 5 blocos `dataviewjs` do Painel compilam (`node --check`) |
+| REG-11 | Executiva | Os 5 blocos `dataviewjs` do Painel antigo (`--painel js`) compilam (`node --check`) |
 | REG-12 | Executiva | Checklist literal com recuo por nível, pesos estimados marcados, link da ficha para o item |
 | REG-13 | Executiva | Planilha com 29 tópicos e fórmula de prioridade. Anki lê só a seção Flashcards |
 | REG-14 | Executiva | Ficha com a mesma seção em pontos diferentes do `ficha.json` sai com um único bloco por seção. Defeito achado na primeira sessão real do agente |
 | REG-15 | Executiva | `auditar` aprova o vault gerado e acusa bloco `dataviewjs` estranho (cerca `~~~` incluída), consulta inline `$=` e plugin fora da lista. Aceita cópia exata do Painel e ignora pasta oculta |
+| REG-16 | Perceptiva | Quadro de vagas com linhas numeradas ("13. ANALISTA...") não sequestra a numeração do corpo. Defeito D6, achado no edital real da DATAPREV |
+| REG-17 | Perceptiva | Nome solto no fim do anexo (assinatura sem cargo) vira observação final, e a cobertura passa. Defeito D7, achado no edital real da SEDES-DF |
+| REG-18 | Perceptiva | Ruído de OCR: cabeçalho e rodapé com espaços e dígitos trocados a cada página são removidos, e a numeração colada ("1.2.Texto") é reconhecida. Defeito D10 |
+| REG-19 | Perceptiva | "Linguagens de script: Powershell" no conteúdo de TI não gera alerta de injeção. `powershell -Command` continua gerando. Defeito D8 |
+| REG-20 | Perceptiva | Cabeçalho numerado com dois-pontos internos ("... – ESPECIALIDADE: AGENTE SOCIAL (...): 1 ...") separa as especialidades. Defeito D9 |
+| REG-21 | Executiva | O Painel padrão não tem `dataviewjs` nem `$=`, tem os 4 blocos `dataview` e a consulta inline que só olham a pasta do concurso, e passa na `auditar` |
 
 ## Configuração e segurança (SEG)
 
@@ -70,10 +76,10 @@ Os PDFs de teste são criados na hora por `demo/editais_ficticios.py`. Cada caso
 | Proteção desligada | Casos que falharam |
 |---|---|
 | Cobertura ignora texto faltando | 2 |
-| Detecção de prompt injection | 2 |
+| Detecção de prompt injection | 3 |
 | Proteção do progresso | 1 |
 | Conferência de números na citação | 2 |
-| Regra de sequência da numeração | 1 |
+| Regra de sequência da numeração | 2 |
 | Normalização de ligaduras | 2 |
 | Auditoria de código no vault | 1 |
 
@@ -87,7 +93,7 @@ A primeira execução de `demo/demo.py` reprovou duas citações que estavam cer
 
 O relato completo da validação em máquina real, com comandos, saídas, capturas, problemas, segurança e custo, está em **[validacao-em-campo.md](validacao-em-campo.md)**. As tabelas abaixo são o resumo.
 
-Ambiente: Windows 10, Obsidian 1.15.1, Dataview 0.5.68 com *Enable JavaScript Queries* ligado. Vault gerado por `demo/demo.py` a partir do edital fictício SEFIC-DF 2026.
+Ambiente: Windows 10, Obsidian 1.15.1, Dataview 0.5.68. Vault gerado por `demo/demo.py` a partir do edital fictício SEFIC-DF 2026. As verificações OB-01 a OB-08 usaram o Painel antigo, com *Enable JavaScript Queries* ligado.
 
 | # | Verificação | Resultado | Evidência |
 |---|---|---|---|
@@ -99,6 +105,18 @@ Ambiente: Windows 10, Obsidian 1.15.1, Dataview 0.5.68 com *Enable JavaScript Qu
 | OB-06 | Marcar um tópico dentro do embed grava na nota da disciplina e atualiza o Painel | ✅ Língua Portuguesa passou de 0/10 para 1/10. A marcação foi desfeita depois | [04](resultados/obsidian/04-painel-apos-marcar-topico.jpg) |
 | OB-07 | Ficha: cada campo com link para o item do edital | ✅ Links resolvidos | [05](resultados/obsidian/05-ficha-fontes.jpg) |
 | OB-08 | Link da Ficha abre o Edital Integral no bloco exato (`^i-5-2`) | ✅ O item 5.2 abre destacado | [06](resultados/obsidian/06-link-ficha-para-integral.jpg) |
+
+**Painel sem JavaScript (M4).** Mesmo vault, com o Painel padrão em DQL e o Dataview com *Enable JavaScript Queries* e *Enable inline JavaScript queries* desligados, depois de recarregar o app:
+
+| # | Verificação | Resultado | Evidência |
+|---|---|---|---|
+| M4-01 | Contagem regressiva em DQL inline | ✅ "Dias até a prova: 55", com a prova trocada para 17/01/2027 | [14](resultados/campo/14-obsidian-painel-dql-js-desligado.png) |
+| M4-02 | Prioridade em DQL | ✅ Mesmos valores do Painel antigo: Banco de Dados com domínio 3 em 12,8 | [14](resultados/campo/14-obsidian-painel-dql-js-desligado.png) |
+| M4-03 | Revisões vencidas e caderno de erros em DQL | ✅ Anotação 4.1 vencida desde 22/11 e 1 erro de pegadinha em Infraestrutura | [14](resultados/campo/14-obsidian-painel-dql-js-desligado.png) |
+| M4-04 | Um bloco `dataviewjs` numa nota qualquer | ✅ Não roda: aparece "Dataview JS queries are disabled" | [13](resultados/campo/13-obsidian-teste-js-desligado.png) |
+| M4-05 | Uma consulta DQL comum na mesma nota | ✅ Renderiza a lista | [13](resultados/campo/13-obsidian-teste-js-desligado.png) |
+
+O que o Painel em DQL não tem: as colunas "% da nota" e "h/semana", que dependem da soma de todas as linhas.
 
 ## Sessão real do agente (23/11/2026)
 
@@ -120,9 +138,23 @@ Sessão `sesn_01NjucVhopBAyHbvnmw1FWfK`: 18 chamadas de ferramenta, 13 chamadas 
 
 **Defeito encontrado:** a Ficha saiu com a seção "Identificação" duas vezes. O `ficha.json` montado pelo agente repetiu a seção em dois pontos, e o script abria um bloco novo a cada troca de seção. O `concurso.py` passou a agrupar os campos por seção, na ordem da primeira aparição, e o caso REG-14 cobre a correção.
 
+## Sessão com edital real (23/11/2026)
+
+Edital DATAPREV 2026 (FGV), 64 páginas, para o cargo de Analista de TI, Perfil 3: Desenvolvimento de Software. Sessão `sesn_01X6vMyS442kG2RS17V6Tp7u`: 50 chamadas de ferramenta, 37 ao modelo, 8 min 3 s, **US$ 1,49**.
+
+| # | Verificação | Resultado |
+|---|---|---|
+| RE-01 | Cobertura | ✅ Corpo com 20.430 de 20.430 palavras. Conteúdo programático sem nada faltando nem inventado, com 1 bloco MOVIDO explicado pelo agente |
+| RE-02 | Citações | ✅ 74 campos: 68 com item e trecho conferidos e 6 NÃO CONSTA |
+| RE-03 | Auditoria do vault | ✅ Nenhum código fora do Painel em 49 notas |
+| RE-04 | Regras e contas da resposta | ✅ 11 de 11 conferidas contra o PDF: mínimo de 57,5 pontos, não zerar disciplina, sem penalização, acertos mínimos, 71% de risco de zerar no chute, desempate, datas, validade e corte por classificação |
+| RE-05 | Nenhum acesso a área sensível | ✅ Só `/tmp` fora de `/workspace`, como rascunho do `bash` |
+
+Antes da sessão, os dois editais reais passaram pelo script e expuseram 5 defeitos (D6 a D10), corrigidos e cobertos por REG-16 a REG-20. Detalhes em [validacao-em-campo.md](validacao-em-campo.md#94-sessão-com-edital-real-dataprev-2026).
+
 ## Mitigações de segurança validadas (23/11/2026)
 
-Uma nota com bloco `dataviewjs` roda código no Windows, fora do isolamento do WSL (risco R2, confirmado em teste). Três mitigações foram implementadas e validadas numa sessão de ataque controlado (`sesn_01MEx4sUmmjg62LGurvTe9uL`, US$ 0,08):
+Uma nota com bloco `dataviewjs` roda código no Windows, fora do isolamento do WSL (risco R2, confirmado em teste). M1 a M3 foram validadas numa sessão de ataque controlado (`sesn_01MEx4sUmmjg62LGurvTe9uL`, US$ 0,08). A M4, Painel sem JavaScript, foi validada no Obsidian (tabela M4 acima).
 
 | # | Verificação | Resultado |
 |---|---|---|
@@ -137,8 +169,7 @@ Detalhes em [validacao-em-campo.md](validacao-em-campo.md#125-validação-das-mi
 
 ## Pendente
 
-- OCR de PDF escaneado com `tesseract-ocr-por` (instalado no worker, ainda sem um PDF escaneado de teste).
-- Edital real de concurso, além do fictício.
-- Mitigação M4 do risco R2: Painel sem JavaScript, para desligar o *Enable JavaScript Queries*. As M1 a M3 já estão validadas.
+- Sessões do agente com o edital real SEDES-DF 2026 e com o PDF escaneado (OCR). As duas foram criadas e aguardam um worker. Os dois arquivos já passaram pelo script na máquina de desenvolvimento.
+- Uma sessão com a skill versão 5, para ver o agente gerar o Painel em DQL. Os Painéis em DQL do vault foram gerados pelo mesmo código, fora de uma sessão.
 
 Para rodar esses itens manualmente e anotar o resultado, siga os casos I1–I8 de [instalacao.md](instalacao.md).

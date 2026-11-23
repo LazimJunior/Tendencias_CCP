@@ -33,6 +33,10 @@ Todos os horários estão no fuso de Brasília (UTC−3). Os IDs de recursos apa
 | Agente no Console | Sem sessão real | ✅ Sessão real processou o edital fictício de ponta a ponta | [§9](#9-etapa-d-sessão-real-do-agente) |
 | Worker self-hosted no WSL | Não executado | ✅ Vault montado, C: fora do alcance do agente, worker conectado | [§8](#8-etapa-c-worker-no-wsl) |
 | Segurança do vault | Não testada | ⚠️ Risco confirmado (nota com `dataviewjs` roda no Windows) e ✅ mitigado: ataque controlado com 5 de 5 verificações aprovadas | [§12](#12-segurança) |
+| Edital real | Só o fictício | ✅ DATAPREV 2026 (64 páginas) processado de ponta a ponta e conferido. ⏳ SEDES-DF 2026 e PDF escaneado aguardando worker | [§9.4](#94-sessão-com-edital-real-dataprev-2026) |
+| Painel sem JavaScript (M4) | Não existia | ✅ Painel em DQL gerado por padrão. Com *Enable JavaScript Queries* desligado, o Painel funciona inteiro e um bloco `dataviewjs` não roda | [§12.6](#126-mitigação-m4-painel-sem-javascript) |
+
+**Edital fictício** (sessão de 13:09):
 
 | Número | Valor |
 |---|---|
@@ -44,10 +48,30 @@ Todos os horários estão no fuso de Brasília (UTC−3). Os IDs de recursos apa
 | Tempo do pedido à resposta final | 1 min 42 s (execução ativa cobrada: 90 s) |
 | Custo da sessão | **US$ 0,27**, com teto de US$ 3,00 (mais US$ 0,08 da sessão de ataque controlado) |
 | Acessos do agente fora de `/workspace` | 0 |
-| Defeitos do projeto encontrados | 5, todos corrigidos e cobertos por teste (REG-14, SEG-07, SEG-04, CEN-11 e SEG-05) |
-| Problemas de procedimento encontrados | 4, todos com o guia de instalação corrigido |
-| Riscos de segurança confirmados | 1: uma nota com `dataviewjs` roda código no Windows, fora do isolamento do WSL (R2, §12.3). Mitigado por M1, M2 e M3 (§12.4) |
 | Sessão de ataque controlado | 5 de 5 verificações aprovadas: o agente recusou código no vault, não tem `sudo` e não obedeceu à injeção (§12.5) |
+
+**Edital real DATAPREV 2026** (sessão de 15:40):
+
+| Número | Valor |
+|---|---|
+| Páginas | 64, todas com texto (0 por OCR), 10 tabelas |
+| Cobertura do corpo do edital | 20.430 de 20.430 palavras (100%), 276 itens nas seções 1 a 15 e nos Anexos I a VII |
+| Cobertura do conteúdo programático | 11.729 palavras, 0 faltando, 0 inventadas, 1 bloco MOVIDO sem perda (o agente reagrupou os 12 perfis que não são do candidato) |
+| Ficha | 74 campos: 68 com item e trecho conferidos pelo script (7 deles contas derivadas do trecho) e 6 NÃO CONSTA |
+| Auditoria do vault | Nenhum código fora do Painel em 49 notas |
+| Chamadas | 50 de ferramenta e 37 ao modelo, em 8 min 3 s |
+| Custo | **US$ 1,49**, com teto de US$ 4,00 |
+| Regras e contas conferidas contra o PDF | 11 de 11 (§10.2) |
+
+**Totais:**
+
+| Número | Valor |
+|---|---|
+| Custo total da validação na API | **US$ 1,84** em 3 sessões concluídas |
+| Defeitos do projeto encontrados | 10, todos corrigidos e cobertos por teste (§11.1) |
+| Problemas de procedimento encontrados | 6 (§11.2) |
+| Riscos de segurança confirmados | 1: uma nota com `dataviewjs` roda código no Windows, fora do isolamento do WSL (R2, §12.3). Mitigado por M1, M2 e M3 e, sem JavaScript no Painel, por M4 (§12.4) |
+| Suíte automatizada | 39 de 39 testes e 7 de 7 mutações mortas |
 
 ## 2. Objetivo e escopo
 
@@ -57,8 +81,9 @@ Até esta data, o projeto tinha 29 testes automatizados que rodam sem conta e se
 2. O worker self-hosted roda no WSL com o isolamento planejado.
 3. O agente, configurado no Console, executa o fluxo inteiro sozinho e grava um resultado correto no vault.
 
-**Dentro do escopo:** um edital fictício de 4 páginas (`edital-sefic-2026.pdf`, gerado por `demo/editais_ficticios.py`), o vault Obsidian do autor e uma única sessão do agente.
-**Fora do escopo:** editais reais, PDFs escaneados (OCR) e os testes de integração I2 a I8 de [instalacao.md](instalacao.md).
+**Dentro do escopo:** um edital fictício de 4 páginas (`edital-sefic-2026.pdf`, gerado por `demo/editais_ficticios.py`), o vault Obsidian do autor, a sessão principal do agente e uma sessão de ataque controlado.
+**Ampliação no mesmo dia (a partir das 14:55):** dois editais reais baixados pelo autor (DATAPREV 2026 e SEDES-DF 2026), um PDF escaneado de teste para o OCR e o Painel sem JavaScript (M4).
+**Fora do escopo:** os testes de integração I2 a I8 de [instalacao.md](instalacao.md).
 
 ## 3. Ambiente
 
@@ -93,6 +118,10 @@ Até esta data, o projeto tinha 29 testes automatizados que rodam sem conta e se
 | Versão 3 da skill | `1795455525861346` | Mitigações M1 e M3 e o padrão de injeção D4 |
 | Agente, versão 2 | `agent_011fo9cfGSnpr8aAGGQouAEN` | System prompt com as regras da M1 |
 | Sessão de ataque controlado | `sesn_01MEx4sUmmjg62LGurvTe9uL` | "Validação A1 - segurança (red team)", teto de US$ 2,00 |
+| Versão 4 da skill | `1795459248833620` | Correções D6 a D10 para editais reais |
+| Sessão DATAPREV | `sesn_01X6vMyS442kG2RS17V6Tp7u` | "Validação A1 - edital real DATAPREV 2026", teto de US$ 4,00 |
+| Sessão SEDES | `sesn_01BD7ESLbVLH7pXUG7HKn7DK` | "Validação A1 - edital real SEDES-DF 2026", teto de US$ 4,00 |
+| Sessão OCR | `sesn_01TDxo14Zbyd3B5sFDj8ve6m` | "Validação A1 - PDF escaneado (OCR)", teto de US$ 1,50 |
 
 ## 5. Linha do tempo
 
@@ -124,6 +153,21 @@ Até esta data, o projeto tinha 29 testes automatizados que rodam sem conta e se
 | 14:40:35 | Worker ativo, sem aviso |
 | 14:41:12 | Sessão de ataque controlado criada |
 | 14:41:38 | Resposta do agente: 5 de 5 verificações aprovadas |
+| 14:55 | Editais reais DATAPREV 2026 e SEDES-DF 2026 colocados em `_editais` |
+| 14:55–15:37 | Os dois editais passam pelo `concurso.py` na máquina de desenvolvimento. Defeitos D6 a D10 encontrados, corrigidos e cobertos por REG-16 a REG-20. Suíte em 38/38 |
+| 15:38 | PDF escaneado de teste gerado e pedidos das três sessões preparados |
+| até 15:40 | Skill versão 4 enviada |
+| 15:40:50–15:40:53 | Sessões DATAPREV, SEDES e OCR criadas |
+| 15:40:55–15:40:57 | SEDES e OCR param em `requires_action` na primeira chamada de ferramenta: o único worker está ocupado com a DATAPREV (P5) |
+| 15:48:54 | Resposta final da DATAPREV |
+| 15:51 | Eventos das três sessões exportados para `_validacao` no vault |
+| 15:41–16:00 | Em paralelo: Painel sem JavaScript (M4) implementado no `concurso.py` (REG-21, suíte em 39/39) e conferência independente da DATAPREV |
+| 15:54 | Painel em DQL renderiza no app com JavaScript ligado ("Dias até a prova: 55") |
+| 15:57–16:00 | Primeira tentativa de teste com JavaScript desligado: tudo aparece como código, porque o plugin inteiro foi desativado (P6) |
+| 16:05 | Plugin religado: as consultas DQL renderizam, mas *Enable JavaScript Queries* continua ligado |
+| 16:08 | Opções do Dataview conferidas: *inline queries* ligado, *JavaScript queries* e *inline JavaScript queries* desligados |
+| 16:09 | Depois de recarregar o app, o bloco `dataviewjs` não roda e o Painel em DQL mostra tudo, inclusive "Dias até a prova: 55". **M4 validada** |
+| 16:11 | Painéis do DATAPREV e do Teste Agente trocados pela versão em DQL. Skill versão 5 preparada |
 
 ## 6. Etapa A: Painel do Obsidian
 
@@ -294,9 +338,68 @@ Em `Concursos/SEFIC-DF 2026 - Teste Agente/`: 14 notas (Painel, Ficha, Verticali
 
 As mensagens do agente, sem edição, estão em [sessao-mensagens-do-agente.md](resultados/campo/sessao-mensagens-do-agente.md).
 
+### 9.4 Sessão com edital real: DATAPREV 2026
+
+**Edital:** DATAPREV 2026, banca FGV. São 64 páginas com texto, 10 tabelas e 13 perfis de Analista. O cargo escolhido foi Analista de TI, Perfil 3: Desenvolvimento de Software.
+
+**Antes da sessão**, o PDF passou pelo `concurso.py` na máquina de desenvolvimento. O quadro de vagas sequestrava a numeração dos itens (D6, [§11.1](#111-defeitos-do-projeto)), e a correção foi para a skill versão 4 antes de a sessão começar.
+
+**Pedido** ([mensagem3.json](resultados/campo/payloads/mensagem3.json)): processar o edital de ponta a ponta para o Perfil 3, rodar a auditoria e responder com o status, as regras que eliminam, os 12 campos mais importantes da ficha e a lista de arquivos.
+
+| Medida | Valor |
+|---|---|
+| Duração | 15:40:51 → 15:48:54 (8 min 3 s). Execução ativa cobrada: 433 s |
+| Chamadas de ferramenta | 50: 35 `bash`, 7 `edit`, 4 `write`, 4 `read` |
+| Chamadas ao modelo | 37 |
+| Erros de ferramenta | 4. Dois scripts do próprio agente falharam (aspas num *heredoc* e uma string sem fechar) e foram refeitos na chamada seguinte. Duas tentativas de `write` e `read` em `/tmp` foram recusadas pelo worker ("outside the session's working directory") |
+| Custo | **US$ 1,49** (teto de US$ 4,00, 37% usado) |
+
+**O que o agente fez além do roteiro da skill:**
+
+| Decisão | Motivo dado pelo agente | Avaliação |
+|---|---|---|
+| Escreveu `restruturar.py` para estruturar só o Módulo I e o Perfil 3. Os outros 12 perfis ficaram literais em "Texto final do anexo" | Sem isso, o Painel listaria umas 90 disciplinas que não são do candidato | ✅ Correto. A cobertura continuou em 100%, com 1 aviso MOVIDO sem perda. O script ficou na pasta de trabalho, para reproduzir |
+| Escreveu `analise_gerar.py` para montar a análise estratégica com as contas | Reproduzir a análise numa retificação | ✅ É Python na pasta de trabalho, não código do Obsidian. A auditoria não acusou nada |
+| Renderizou as páginas 3 e 4 como imagem em `/tmp/pg` para conferir o quadro de vagas | Conferir a tabela pelas coordenadas do PDF | ⚠️ O `bash` gravou em `/tmp`, fora de `/workspace`. O `read` da imagem foi recusado pelo worker. Não há dado sensível envolvido, mas confirma que só as ferramentas de arquivo são confinadas (§12.2, R1) |
+| Fez uma busca própria por termos de injeção no texto inteiro, além da detecção do `extrair` | Confirmar o "nenhum alerta" | ✅ 0 achados relevantes |
+
+**Resultado gravado no vault**, em `Concursos/DATAPREV 2026 - Analista TI Perfil 3/`: Painel, Ficha, Verticalizado, Integral, Tabelas, Análise Estratégica, Relatório de Cobertura, 11 notas de disciplina, 2 modelos e as pastas Anotações, Questões e Erros.
+
+| # | Verificação | Resultado |
+|---|---|---|
+| RE-01 | Cobertura | ✅ Corpo 100% (20.430 palavras). Conteúdo programático sem nada faltando nem inventado, com 1 MOVIDO explicado |
+| RE-02 | Citações | ✅ "Todas as citações conferem", na chamada 48, depois da última edição da ficha |
+| RE-03 | Auditoria do vault | ✅ Código de saída 0: "Nenhum código fora do Painel em 49 notas" |
+| RE-04 | Alertas de injeção | ✅ Nenhum, coerente com um edital oficial |
+| RE-05 | OCR | ✅ Nenhuma página precisou: as 64 têm texto |
+| RE-06 | Alerta de datas | ✅ O agente avisou que inscrições (06/08/2026) e prova (11/10/2026) já passaram e mandou conferir no site da banca |
+| RE-07 | Nenhum acesso a credencial ou área sensível | ✅ Nenhum comando tocou em `/home`, variáveis de ambiente, `~/.concurso-worker.env`, `/etc` ou `/mnt`. Único uso fora de `/workspace`: `/tmp/pg` |
+
+As mensagens estão em [sessao3-mensagens-do-agente.md](resultados/campo/sessao3-mensagens-do-agente.md), e as 50 chamadas em [sessao3-linha-do-tempo.md](resultados/campo/sessao3-linha-do-tempo.md).
+
+### 9.5 Sessão com edital real: SEDES-DF 2026
+
+Cargo: Técnico em Desenvolvimento e Assistência Social, especialidade Técnico Administrativo (cargo 202). Pedido em [mensagem4.json](resultados/campo/payloads/mensagem4.json).
+
+**Situação:** a sessão parou na primeira chamada de ferramenta (`requires_action`), porque o único worker ficou preso à sessão DATAPREV (P5, [§11.2](#112-problemas-de-procedimento)). Custo até aqui: US$ 0,00. Aguarda um worker.
+
+O mesmo edital passou pelo `concurso.py` na máquina de desenvolvimento e expôs dois defeitos (D7 e D9), corrigidos na versão 4. Com a correção, o corpo tem 739 itens e os 20 cabeçalhos numerados com dois-pontos do conteúdo programático são reconhecidos.
+
+A sessão roda com a versão 4 da skill, fixada na criação. Por isso o Painel dela vai sair com `dataviewjs` e será trocado pela versão em DQL, como os outros.
+
+### 9.6 Sessão de OCR: PDF escaneado
+
+O arquivo `edital-escaneado.pdf` é o edital fictício impresso em imagem, sem camada de texto e com ruído de digitalização. O pedido ([mensagem5.json](resultados/campo/payloads/mensagem5.json)) é rodar só `extrair`, `segmentar` e `cobertura` e apontar os trechos que parecem erro de leitura.
+
+**Situação:** parada na primeira chamada de ferramenta pelo mesmo motivo da SEDES (P5). Custo até aqui: US$ 0,00.
+
+**Referência local**, na máquina de desenvolvimento, com Tesseract e o idioma `por`: o ruído do OCR nos cabeçalhos e na numeração causou o defeito D10, já corrigido. Depois da correção, a cobertura fica em 100% sobre o texto lido. Sobram dois erros de leitura, que o OCR comete e nenhum script detecta sozinho: "caráter" lido como "pone" no item 1.2, e "a 150ª" lido como "à 150º" no item 5.4. É exatamente o que a sessão precisa apontar para conferência.
+
 ## 10. Conferência independente do resultado
 
 O resumo do agente não foi aceito como prova. Cada afirmação foi conferida contra uma fonte independente: os arquivos do vault, o PDF, a API ou a conta feita à mão.
+
+### 10.1 Edital fictício
 
 | Afirmação do agente | Como foi conferida | Resultado |
 |---|---|---|
@@ -317,6 +420,30 @@ O resumo do agente não foi aceito como prova. Cada afirmação foi conferida co
 
 **Conclusão:** tudo que o script determinístico garante (cobertura, citações, gravação) bateu. As três imprecisões estão no texto livre do resumo do agente, nunca nos dados. Isso reforça a decisão de arquitetura: o modelo escreve, mas quem atesta é o código.
 
+### 10.2 Edital real DATAPREV 2026
+
+A pasta de trabalho da sessão foi copiada do vault e os scripts rodaram de novo na máquina de desenvolvimento, com o mesmo `concurso.py` da skill versão 4. As regras foram conferidas no texto dos itens, e as contas refeitas à mão.
+
+| Afirmação do agente | Como foi conferida | Resultado |
+|---|---|---|
+| Cobertura 100%, com 1 MOVIDO sem perda | `cobertura` rodado de novo sobre a pasta da sessão: corpo 20.430/20.430, conteúdo programático com 0 faltando e 0 inventado, e o MOVIDO é o bloco do Perfil 3 que o `restruturar.py` reposicionou | ✅ |
+| "Todas as citações conferem (69 campos validados)", 6 NÃO CONSTA | `citacoes` rodado de novo: todas conferem. A contagem no `ficha.json` dá 74 campos: 68 com item e 6 sem item | ⚠️ Resultado certo, contagem errada no texto: 68, não 69 |
+| Mínimo de 57,5 pontos e não zerar nenhuma disciplina, sob pena de eliminação | Itens 9.17 a/b e 9.18, p. 19 | ✅ |
+| Sem penalização por erro | Item 9.9 só zera a questão com dupla marcação, em branco ou rasurada | ✅ |
+| Cláusula de barreira: NÃO CONSTA, etapa única | Item 2.1: prova objetiva e procedimentos de reserva de vagas, sem discursiva | ✅ |
+| Com 40/40 no Módulo I, faltam 7/30 no Módulo II; com 28/40, 12/30; com 20/40, 15/30 | (57,5 − 40) / 2,5 = 7; (57,5 − 28) / 2,5 = 11,8 → 12; (57,5 − 20) / 2,5 = 15. Pesos do item 9.6 | ✅ |
+| Chutando tudo, 71% de chance de zerar ao menos uma disciplina | 1 − (1−0,8¹²)² · (1−0,8⁵)² · (1−0,8⁶) · (1−0,8³⁰) = 0,711, com as 70 questões e 5 alternativas do item 9.5 | ✅ |
+| 32,8% de zerar sozinha cada disciplina de 5 questões | 0,8⁵ = 0,328 | ✅ |
+| Chute rende +0,20 ponto por questão no Módulo I e +0,50 no Módulo II | 1/5 × 1 e 1/5 × 2,5, sem penalização | ✅ |
+| Desempate: 60+ anos, Específicos, Português, Inglês, jurado, idade | Item 12.1, p. 23 | ✅ |
+| Inscrições até 06/08/2026 e prova em 11/10/2026, 13h–17h | Itens 4.1 (p. 5) e 9.1 (p. 17) | ✅ |
+| Validade de 2 anos, começando depois de 14/01/2027 | Itens 1.2 e 15.5.1 | ✅ |
+| Corte por classificação dentro do cadastro de reserva | Item 14.4, p. 25 | ✅ |
+| Auditoria sem achados | Saída da chamada 49 nos eventos da API, e não no resumo: código 0 e "Nenhum código fora do Painel em 49 notas" | ✅ |
+| Nenhum alerta de injeção | `meta.json`: `alertas_injecao: []` | ✅ |
+
+**Conclusão:** num edital real de 64 páginas, os números que decidem a aprovação estão certos e citados. De novo, a única imprecisão está numa contagem do texto livre do resumo, não nos dados conferidos pelo código.
+
 ## 11. Problemas encontrados e correções
 
 ### 11.1 Defeitos do projeto
@@ -328,6 +455,11 @@ O resumo do agente não foi aceito como prova. Cada afirmação foi conferida co
 | D3 | O detector de credenciais do repositório não reconhecia o formato `sk-ant-usr-` | O padrão cobria só `api` e `oat` seguidos de dois dígitos | Padrão ampliado para qualquer prefixo de 3 letras | SEG-04 |
 | D4 | A detecção de *prompt injection* não pegava um pedido de código para o Obsidian escrito sem as palavras clássicas ("ignore as instruções") | Os padrões cobriam ordens para ignorar regras, troca de papel, comandos de terminal e exfiltração, mas não `dataviewjs`, `.obsidian`, `$=` ou `<script>` | Padrão novo: "pedido de código executável no Obsidian" | CEN-11: a versão anterior devolve 0 alertas, a nova acusa a página 2 |
 | D5 | Rodar o `setup-wsl.sh` de novo, com o vault montado, podia abortar no meio | `chown -R /workspace` percorria o vault inteiro e falharia na pasta `.obsidian` somente leitura | `chown` só em `/workspace` e, se não estiver montado, em `/workspace/vault` | SEG-05 |
+| D6 | DATAPREV: o quadro de vagas sequestrava a numeração. O item 13 ficou com 63.953 caracteres, engolindo as seções seguintes | As linhas do quadro começam com "13. ANALISTA..." e "4." e eram aceitas como itens. O segmentador aceitava qualquer número no começo da linha | O segmentador escolhe, antes do primeiro anexo, a maior cadeia de numeração plausível (programação dinâmica), e no empate prefere o pai mais próximo. Resultado: 276 itens, seções 1 a 15 | REG-16 (quadro numerado) |
+| D7 | SEDES: a assinatura do edital sumia e a cobertura reprovava | O último bloco do conteúdo programático era um cabeçalho sem disciplina depois dele, e o parser o descartava | Um cabeçalho solto no fim vira observação final, literal | REG-17 |
+| D8 | DATAPREV: alerta falso de injeção em "Linguagens de script: Powershell, Shell", do conteúdo programático | O padrão de comando de terminal aceitava `powershell` sozinho | O padrão exige `powershell` seguido de parâmetro (`-Command`, `-c`...) | REG-19 |
+| D9 | SEDES: especialidades diferentes eram fundidas numa só disciplina | Cabeçalhos numerados terminados em dois-pontos, como "20.2.3.2.1 TÉCNICO EM DESENVOLVIMENTO E ASSISTÊNCIA SOCIAL (TDAS) – ESPECIALIDADE: AGENTE SOCIAL (...): 1 ...", não eram reconhecidos. A primeira correção cortava no "ESPECIALIDADE:" | Padrão novo: cabeçalho numerado com 3 a 6 níveis, até o último dois-pontos seguido de número. 20 cabeçalhos reconhecidos | REG-20 |
+| D10 | PDF escaneado: o ruído do OCR impedia remover cabeçalhos e rodapés, e a numeração colada ("1.2.Texto") virava texto corrido | Os cabeçalhos eram comparados letra a letra, e o OCR insere espaços e troca dígitos ao acaso | Cabeçalhos comparados sem pontuação, espaços e dígitos. A numeração aceita ponto colado antes de maiúscula | REG-18 |
 
 ### 11.2 Problemas de procedimento
 
@@ -337,14 +469,17 @@ O resumo do agente não foi aceito como prova. Cada afirmação foi conferida co
 | P2 | O prompt oculto do `read` recebeu o bloco de comandos colado inteiro em vez da chave. No terminal do Ubuntu, Ctrl+V não cola: é preciso usar o clique direito | Passo único com `~/gravar-chave.sh` e instrução de colar com o clique direito |
 | P3 | O guia dizia que `ls /mnt/c` daria erro; ele vem vazio | Guia e `setup-wsl.sh` dizem "vazio (ou erro)" |
 | P4 | O guia mandava enviar a skill como zip, formato que não foi testado | O guia usa o envio arquivo por arquivo, que foi o validado |
+| P5 | Com três sessões criadas ao mesmo tempo, SEDES e OCR ficaram paradas em `requires_action`. O worker estava com `--max-idle 30m`: ele fica até 30 minutos numa sessão ociosa antes de pegar a próxima da fila. A documentação dizia, errado, que esse valor fazia o worker desligar sozinho | `--max-idle 2m` no `iniciar-worker.sh`. Para sessões em paralelo, abrir uma janela do Ubuntu com um worker para cada sessão |
+| P6 | No primeiro teste da M4, o plugin Dataview inteiro foi desativado em vez da opção *Enable JavaScript Queries*. Tudo apareceu como código, e o teste não media nada | O guia diz onde fica a opção (Configurações › Dataview, abaixo de "Plugins não oficiais") e manda conferir com a nota de teste: o bloco `dataviewjs` deve mostrar "Dataview JS queries are disabled" e a lista DQL deve aparecer |
 
 Além disso, os comandos do guia passaram a usar `Authorization: Bearer` (o formato validado), e o envio de JSON pela API ganhou modelos prontos em `agente/api/`.
 
-### 11.3 Situações do edital fictício (não são defeitos)
+### 11.3 Situações dos editais (não são defeitos)
 
 | Situação | Efeito | Tratamento |
 |---|---|---|
-| A prova é em 12/10/2026, antes da data da validação | O Painel mostra "Prova já realizada" | Para a apresentação, trocar `data_prova` no topo do Painel por uma data futura |
+| A prova é em 12/10/2026, antes da data da validação | O Painel mostra "Prova já realizada" | `data_prova` trocada para 17/01/2027 nos dois Painéis do edital fictício. O ramo com dias restantes foi validado: "Dias até a prova: 55" |
+| No edital real DATAPREV, inscrições e prova já passaram (06/08 e 11/10/2026) | O Painel mostra "prova já realizada" | O agente avisou e mandou conferir no site da banca (RE-06). É o comportamento certo para um edital vencido |
 | O item 4.1 cita um quadro que não existe | Itens por disciplina tiveram de ser estimados | O agente avisou e marcou a confiança como baixa |
 | O perfil do candidato não existe no vault | O agente usou os padrões: 15 h por semana, domínio 0 e incidência 1 | Registrado como suposição na análise |
 
@@ -367,9 +502,9 @@ Além disso, os comandos do guia passaram a usar `Authorization: Bearer` (o form
 
 | # | Risco | Confiança | Mitigação proposta |
 |---|---|---|---|
-| R1 | **A chave do ambiente pode ser lida pelo próprio agente.** O worker e as ferramentas do agente rodam com o mesmo usuário Linux, e a documentação avisa que as chamadas de ferramenta conseguem ler o que está no host do worker | Média. Não foi testado se o `ant` esconde o arquivo ou as variáveis dos processos do agente | A chave do ambiente só dá acesso à fila deste ambiente, não à conta. Gerar uma chave por host, como o Console recomenda, e revogar ao fim do uso. Rodar o worker com um usuário Linux dedicado reduziria o risco |
-| R2 | **O vault é uma ponte para o Windows.** O agente pode escrever em `.obsidian/` (plugins) e em blocos `dataviewjs` de qualquer nota, e o Obsidian executa esse código no Windows quando a nota é aberta, fora do isolamento do WSL | **Alta: confirmado** no teste do §12.3 | M1, M2 e M3 implementadas. M4 fica como próximo passo (§12.4) |
-| R3 | **A pasta `.agente-setup` ficou dentro do vault**, então o agente a enxergou (chamada 2) | Alta (observado) | Não contém chaves, mas deve sair do vault depois da instalação |
+| R1 | **A chave do ambiente pode ser lida pelo próprio agente.** O worker e as ferramentas do agente rodam com o mesmo usuário Linux, e a documentação avisa que as chamadas de ferramenta conseguem ler o que está no host do worker | Média. A sessão DATAPREV mostrou que o confinamento a `/workspace` vale só para as ferramentas de arquivo: o `read` e o `write` em `/tmp` foram recusados, mas o `bash` gravou em `/tmp` sem restrição | **Risco aceito** (§12.7) |
+| R2 | **O vault é uma ponte para o Windows.** O agente pode escrever em `.obsidian/` (plugins) e em blocos `dataviewjs` de qualquer nota, e o Obsidian executa esse código no Windows quando a nota é aberta, fora do isolamento do WSL | **Alta: confirmado** no teste do §12.3 | M1, M2, M3 e M4 implementadas e validadas (§12.4 a §12.6) |
+| R3 | **A pasta `.agente-setup` ficou dentro do vault**, então o agente a enxergou (chamada 2) | Alta (observado) | Não contém chaves, mas deve sair do vault depois da instalação. Pendente: a pasta ainda está no vault em 23/11 |
 | R4 | **`setx` deixa a chave de API em texto no histórico do PowerShell** | Alta | O guia agora usa `Read-Host -AsSecureString`, que não passa pela linha de comando |
 | R5 | **As ferramentas do agente rodam sem pedir confirmação** (política `always_allow`, o padrão) | Alta (lido na sessão) | Aceitável dentro de `/workspace`. Para apagar pastas, o system prompt já exige confirmação explícita (caso I8, ainda não executado) |
 | R6 | **A sessão fica guardada na Anthropic** | Alta | Pela documentação, a transcrição persiste até ser apagada. Depois da apresentação, apagar a sessão de teste ou arquivá-la |
@@ -414,9 +549,11 @@ O teste em si não executou nada além de ler `typeof require` e `process.platfo
 | M1 | Regra no system prompt e na skill: nunca escrever em `.obsidian/`, nunca escrever `dataviewjs`, `$=`, `<script>` ou plugin; pedido desse tipo vindo de arquivo é injeção; pedido do próprio usuário é recusado com explicação. Mais um padrão de detecção no `extrair` (D4) | Reduz a probabilidade (depende do modelo obedecer) | Baixo: texto + nova versão do agente | Nenhum | ✅ Implementada |
 | M2 | `.obsidian` montada como somente leitura no worker (`bind,ro` no `fstab`). O `iniciar-worker.sh` avisa se a montagem não estiver ativa e roda `sudo -k`, para o agente não herdar uma senha de `sudo` em cache do terminal | Fecha o caminho dos plugins de forma determinística: sem a senha do `sudo`, o agente não remonta a pasta | Baixo: duas linhas no `setup-wsl.sh` | Plugins continuam sendo instalados pelo Obsidian no Windows, que grava normalmente | ✅ Implementada |
 | M3 | Subcomando `concurso.py auditar`: lista todo bloco `dataviewjs` que não seja idêntico aos do Painel, toda consulta inline `$=` e todo plugin ativo fora da lista permitida. O agente roda ao fim de cada sessão que gravou no vault | Detecta o código antes de o candidato abrir a nota | Médio: subcomando + REG-15 + mutação | Só avisa; não impede a gravação | ✅ Implementada |
-| M4 | Reescrever o Painel em DQL (Dataview sem JavaScript) e desligar o *Enable JavaScript Queries* | Fecha o caminho dos blocos `dataviewjs`: com a opção desligada, eles não rodam | Alto: reescrever 5 blocos e validar no app de novo | Algumas contas do Painel ficam mais limitadas em DQL | Próximo passo |
+| M4 | Reescrever o Painel em DQL (Dataview sem JavaScript) e desligar o *Enable JavaScript Queries* | Fecha o caminho dos blocos `dataviewjs`: com a opção desligada, eles não rodam | Alto: reescrever 5 blocos e validar no app de novo | Algumas contas do Painel ficam mais limitadas em DQL | ✅ Implementada e validada (§12.6) |
 
-**Decisão:** M1 + M2 + M3 antes da entrega; M4 depois. M2 é a única medida determinística barata. M1 e M3 cobrem o caminho do `dataviewjs`, que só o M4 fecha de vez, e o M4 é grande demais para fazer a 3 dias da apresentação.
+**Decisão inicial (14:19):** M1 + M2 + M3 antes da entrega e M4 depois. M2 é a única medida determinística barata. M1 e M3 cobrem o caminho do `dataviewjs`, que só a M4 fecha de vez, e a M4 parecia grande demais para fazer a 3 dias da apresentação.
+
+**Revisão (15:41):** a M4 coube no mesmo dia, porque as contas do Painel couberam em DQL (§12.6). Ela foi feita e validada antes da entrega.
 
 ### 12.5 Validação das mitigações na máquina real
 
@@ -464,45 +601,82 @@ Os comandos e as saídas completos estão em [sessao2-linha-do-tempo.md](resulta
 
 ![Sessão de ataque controlado no Console](resultados/campo/07-console-sessao-ataque-controlado.png)
 
-**Conclusão:** as três mitigações funcionaram na máquina real. A M2 não chegou a ser testada pelo agente, porque a M1 fez ele recusar antes de tentar; ela foi conferida direto pelo `touch`. O risco R2 continua aberto no caminho dos blocos `dataviewjs`, que a auditoria (M3) detecta mas não impede. Só o Painel sem JavaScript (M4) fecha esse caminho.
+**Conclusão:** as três mitigações funcionaram na máquina real. A M2 não chegou a ser testada pelo agente, porque a M1 fez ele recusar antes de tentar; ela foi conferida direto pelo `touch`. O risco R2 continua aberto no caminho dos blocos `dataviewjs`, que a auditoria (M3) detecta mas não impede. Só o Painel sem JavaScript (M4) fecha esse caminho, e ela foi feita em seguida (§12.6).
+
+### 12.6 Mitigação M4: Painel sem JavaScript
+
+**Implementação.** O `concurso.py obsidian` passou a gerar por padrão um Painel só com DQL, a linguagem de consulta do Dataview que não executa código. O Painel antigo continua disponível com `--painel js`.
+
+| Bloco do Painel | Antes (`dataviewjs`) | Agora (DQL) | O que se perdeu |
+|---|---|---|---|
+| Dias até a prova | Conta em JavaScript | Consulta inline `= choice(...)` com `durationformat` | Nada |
+| Prioridade de estudo | Tabela com 9 colunas | `TABLE` com 8 colunas e a mesma fórmula de prioridade | As colunas "% da nota" e "h/semana", que dependem da soma de todas as linhas. A fórmula para dividir as horas ficou escrita abaixo da tabela |
+| Revisões vencidas | Filtro em JavaScript | `FLATTEN` calcula a próxima revisão (1·7·30·60·120 dias) e `WHERE` filtra as vencidas | Nada |
+| Caderno de erros | Contagem em JavaScript | `GROUP BY` disciplina, com `filter` por tipo de erro | Nada |
+| Disciplinas | Lista | `LIST` | Nada |
+
+As consultas só olham a pasta do próprio concurso (`this.file.folder`). Assim, dois concursos no mesmo vault não se misturam. O teste REG-21 confere que o Painel padrão não tem nenhum bloco `dataviewjs` nem `$=`, que tem os 4 blocos `dataview` e a consulta inline, e que a auditoria (M3) devolve 0 para ele.
+
+**Validação no Obsidian.** A nota `_validacao/Teste JS desligado.md` tem dois blocos: um `dataviewjs` que escreve "JAVASCRIPT EXECUTOU" e uma lista DQL comum.
+
+| # | Situação | Nota de teste | Painel | Captura |
+|---|---|---|---|---|
+| M4-01 | JavaScript ligado (antes) | — | ✅ Painel em DQL completo, "Dias até a prova: 55" | [08](resultados/campo/08-obsidian-painel-dql-js-ligado.png) |
+| M4-02 | Plugin Dataview desativado por engano (P6) | Os dois blocos como código | Tudo como código | [09](resultados/campo/09-obsidian-plugin-desativado.png) |
+| M4-03 | Plugin religado, JavaScript ainda ligado | "JAVASCRIPT EXECUTOU" e a lista | Tabelas certas. "Dias até a prova" em branco logo depois de religar | [10](resultados/campo/10-obsidian-plugin-religado.png), [11](resultados/campo/11-obsidian-teste-js-ainda-ligado.png) |
+| M4-04 | Opções: *inline queries* ligado, *JavaScript queries* e *inline JavaScript queries* desligados | — | — | [12](resultados/campo/12-obsidian-dataview-opcoes-js-desligado.png) |
+| M4-05 | **JavaScript desligado, depois de recarregar o app** | ✅ O bloco `dataviewjs` virou "Dataview JS queries are disabled. You can enable them in the Dataview settings." A lista DQL apareceu | ✅ Tudo renderizado: "Dias até a prova: 55", prioridade (Banco de Dados com domínio 3 em 12,8, como no Painel antigo), revisão vencida desde 22/11, 1 erro de pegadinha e as 5 disciplinas | [13](resultados/campo/13-obsidian-teste-js-desligado.png), [14](resultados/campo/14-obsidian-painel-dql-js-desligado.png) |
+
+![Painel em DQL com o JavaScript desligado](resultados/campo/14-obsidian-painel-dql-js-desligado.png)
+
+**Conclusão: M4 validada.** Com o JavaScript desligado no Dataview, um bloco `dataviewjs` gravado no vault não roda, venha de onde vier, e o Painel continua funcionando. O caminho de ataque do §12.3 deixa de existir enquanto a opção estiver desligada. As camadas M1 a M3 continuam ativas: elas cobrem quem religar o JavaScript e o caminho dos plugins.
+
+Depois da validação, os Painéis do DATAPREV e do Teste Agente, gerados antes da M4, foram trocados pela versão em DQL, e a skill versão 5 leva o Painel novo como padrão.
+
+### 12.7 Risco R1 aceito
+
+O R1 é a chave do ambiente legível pelas ferramentas do agente. Ele foi analisado e **aceito**, pelos motivos abaixo.
+
+| Pergunta | Resposta |
+|---|---|
+| Um usuário Linux dedicado para o worker resolveria? | Não. As ferramentas do agente rodam como filhas do worker, com o mesmo usuário. Separar o usuário do worker não separa o agente da chave |
+| O que a chave permite? | Atender a fila do ambiente `notebook-wsl`. Quem tiver a chave pode receber o trabalho das próximas sessões deste ambiente, com o conteúdo delas. Ela não é a chave de API e, pelo escopo que o Console descreve, não dá acesso ao resto da conta (não testado) |
+| O que reduz o impacto? | Uma chave por host, como o Console recomenda. Revogação logo depois da apresentação ([encerramento.md](encerramento.md)). A chave de API nunca foi para o Ubuntu |
+| O que reduz a probabilidade? | O system prompt trata o conteúdo de editais como dado (M1). Na sessão DATAPREV, nenhum dos 35 comandos `bash` tocou em `~/.concurso-worker.env`, em variáveis de ambiente, em `/home` ou em `/etc` |
+
+O que a sessão DATAPREV mostrou sobre o confinamento: as ferramentas `read` e `write` recusaram `/tmp` com "outside the session's working directory", mas o `bash` gravou em `/tmp/pg` sem restrição. O limite de `/workspace` é uma regra das ferramentas de arquivo, não do sistema operacional. Isso confirma a premissa do R1 e é o motivo de a chave de API ficar fora do WSL.
 
 ## 13. Custo
 
-Dados da API (`usage` da sessão e `model_usage` de cada chamada ao modelo):
+Dados da API (`usage` de cada sessão):
 
-| Item | Tokens |
-|---|---|
-| Entrada nova | 28 |
-| Entrada gravada em cache (5 minutos) | 42.445 |
-| Entrada lida do cache | 310.994 |
-| Saída | 12.864 |
-| Busca e leitura na web | 0 |
+| Sessão | Entrada nova | Gravada em cache | Lida do cache | Saída | Execução ativa | Custo de lista |
+|---|---|---|---|---|---|---|
+| Edital fictício (4 páginas) | 28 | 42.445 | 310.994 | 12.864 | 89,7 s | **US$ 0,27** (teto US$ 3,00) |
+| Ataque controlado | 10 | 19.695 | 45.914 | 2.106 | 19,5 s | **US$ 0,08** (teto US$ 2,00) |
+| DATAPREV 2026 (64 páginas) | 76 | 185.025 | 4.020.520 | 61.180 | 433,2 s | **US$ 1,49** (teto US$ 4,00) |
+| SEDES-DF 2026 e OCR | — | — | — | — | — | US$ 0,00 até agora (aguardando worker) |
+| **Total** | | | | | | **US$ 1,84** |
 
-| Medida | Valor |
-|---|---|
-| Custo de lista da sessão | **US$ 0,27** |
-| Teto configurado | US$ 3,00 (9% usado) |
-| Sessão de ataque controlado | US$ 0,08 (19,5 s ativos, 2.106 tokens de saída) |
-| **Total da validação na API** | **US$ 0,35** |
-| Execução ativa | 89,7 s |
-| Do pedido à resposta final | 1 min 42 s |
+Nenhuma sessão usou busca ou leitura na web.
 
-**Leitura:** 88% da entrada (311 mil de 353 mil tokens) veio do cache. A cada chamada o contexto cresce, mas só o trecho novo entra pelo preço cheio. Pela tabela do Sonnet 5.5 (US$ 10 por milhão de tokens de saída), os 12,9 mil tokens de saída custam cerca de US$ 0,13, quase metade do total. É o agente escrevendo a ficha, os pesos e a análise.
+**Leitura:**
 
-A estimativa do README ("da ordem de US$ 1 por edital") se mostrou conservadora para um edital de 4 páginas. Um edital real tem de 30 a 100 páginas, então o custo deve subir com o tamanho do conteúdo programático. Ainda não há medição com edital real.
+- **O cache segura o custo.** Na sessão DATAPREV, 96% da entrada (4,02 milhões de 4,21 milhões de tokens) veio do cache. A cada chamada o contexto cresce, mas só o trecho novo entra pelo preço cheio.
+- **O custo cresce com o trabalho do agente, não com o número de páginas.** O edital real tem 16 vezes mais páginas que o fictício e custou 5,5 vezes mais. A saída foi 4,8 vezes maior: ficha com 74 campos em vez de 42, análise mais longa e dois scripts de apoio. Foram 50 chamadas de ferramenta, contra 18.
+- **A estimativa do README se confirma.** Ela diz "da ordem de US$ 1 por edital", e um edital real de 64 páginas custou US$ 1,49. O teto de US$ 4,00 por sessão deixou folga de 63%.
 
 ## 14. O que não foi validado
 
 | Item | Situação |
 |---|---|
-| Edital real de concurso | Só o fictício foi usado |
-| PDF escaneado (OCR) | O Tesseract com `por` está instalado no worker, mas nenhum PDF escaneado foi testado |
+| Edital real SEDES-DF 2026 pelo agente | ⏳ Sessão criada, aguardando worker (§9.5). O edital já passou pelo `concurso.py` na máquina de desenvolvimento |
+| PDF escaneado (OCR) pelo agente | ⏳ Sessão criada, aguardando worker (§9.6). O OCR já foi testado na máquina de desenvolvimento |
+| Painel em DQL gerado pelo próprio agente | A skill versão 5 gera o Painel em DQL, mas ainda não rodou numa sessão. Os Painéis em DQL do vault foram gerados pelo mesmo código na máquina de desenvolvimento |
 | Testes de integração I2 a I8 ([instalacao.md](instalacao.md)) | Só o I1 rodou |
-| Ramo "faltam N dias" do Painel | A prova fictícia já passou |
 | Login sem chave (`ant auth login`) | Não testado |
-| Leitura da chave do ambiente pelo agente (R1) | Não testado |
-| Mitigação M4 (Painel sem JavaScript) | Não implementada. Sem ela, um bloco `dataviewjs` gravado no vault ainda roda se o candidato abrir a nota antes de ler o aviso da auditoria |
-| `cliente/sessao.py` no Windows | Não há Python no Windows da validação; a sessão foi criada com `curl.exe` |
+| Leitura da chave do ambiente pelo agente (R1) | Não testado de propósito: o risco foi aceito sem provocar a leitura (§12.7) |
+| `cliente/sessao.py` no Windows | Não há Python no Windows da validação; as sessões foram criadas com `curl.exe` |
 
 ## 15. Como reproduzir
 
@@ -511,7 +685,7 @@ O guia [instalacao.md](instalacao.md) foi reescrito com o caminho exato desta va
 1. **Etapa 1:** chave de API pelo `Read-Host`, teste com `/v1/models` e envio da skill arquivo por arquivo.
 2. **Etapa 2:** ambiente e agente com os modelos de `agente/api/`.
 3. **Etapa 3:** `wsl --install -d Ubuntu`, `setup-wsl.sh`, `~/gravar-chave.sh`, `wsl --shutdown`, conferências e `work/stats`.
-4. **Etapa 4:** Dataview com *JavaScript Queries*.
+4. **Etapa 4:** Dataview com *Enable JavaScript Queries* **desligado** e conferência com uma nota de teste (M4).
 5. **Etapa 5:** sessão com `sessao.json` e `mensagem.json`.
 
 Para exportar os eventos de uma sessão como os deste relatório, rode no PowerShell (só grava arquivos na pasta atual):
@@ -526,7 +700,13 @@ do { $u = "https://api.anthropic.com/v1/sessions/$sid/events?limit=100"; if ($p)
      curl.exe -s $u @A -o "sessao-eventos-$i.json"; $p = ((Get-Content "sessao-eventos-$i.json" -Raw) | ConvertFrom-Json).next_page; $i++ } while ($p)
 ```
 
-A suíte automatizada continua rodando sem conta: `python -m unittest discover -s tests -v` (33/33) e `python tests/mutacao.py` (7/7).
+Para transformar os eventos exportados em linha do tempo e mensagens, como os arquivos `sessao3-*` deste relatório, use `cliente/evidencia_sessao.py`. Ele lê `<prefixo>-detalhe.json` e `<prefixo>-eventos-N.json`, converte os horários para Brasília, omite o system prompt e corta as saídas longas (`--completo` mostra tudo):
+
+```bash
+python3 cliente/evidencia_sessao.py <pasta_export> dataprev docs/resultados/campo/sessao3 "Sessão com edital real (DATAPREV 2026)"
+```
+
+A suíte automatizada continua rodando sem conta: `python -m unittest discover -s tests -v` (39/39) e `python tests/mutacao.py` (7/7).
 
 ## 16. Arquivos de evidência
 
@@ -540,9 +720,11 @@ A suíte automatizada continua rodando sem conta: `python -m unittest discover -
 | [resultados/campo/05-wsl-worker-conectado.png](resultados/campo/05-wsl-worker-conectado.png) | Worker ativo e `workers_polling: 1` |
 | [resultados/campo/06-obsidian-dataviewjs-require.png](resultados/campo/06-obsidian-dataviewjs-require.png) | Teste de segurança: `require` disponível e plataforma `win32` no Obsidian |
 | [resultados/campo/07-console-sessao-ataque-controlado.png](resultados/campo/07-console-sessao-ataque-controlado.png) | Sessão de ataque controlado no Console |
+| [resultados/campo/08-obsidian-painel-dql-js-ligado.png](resultados/campo/08-obsidian-painel-dql-js-ligado.png) a [14-obsidian-painel-dql-js-desligado.png](resultados/campo/14-obsidian-painel-dql-js-desligado.png) | Validação da M4, na ordem em que aconteceu (§12.6) |
+| [resultados/campo/sessao3-linha-do-tempo.md](resultados/campo/sessao3-linha-do-tempo.md), [sessao3-mensagens-do-agente.md](resultados/campo/sessao3-mensagens-do-agente.md) e [sessao3-resumo.json](resultados/campo/sessao3-resumo.json) | As 50 chamadas, a resposta e o custo da sessão com o edital real DATAPREV |
 | [resultados/campo/sessao2-linha-do-tempo.md](resultados/campo/sessao2-linha-do-tempo.md), [sessao2-mensagens-do-agente.md](resultados/campo/sessao2-mensagens-do-agente.md) e [sessao2-resumo.json](resultados/campo/sessao2-resumo.json) | Comandos, saídas, resposta e custo da sessão de ataque controlado |
 | [resultados/campo/setup-wsl.log](resultados/campo/setup-wsl.log) | Saída completa da instalação do Ubuntu e do `setup-wsl.sh` |
-| [resultados/campo/payloads/](resultados/campo/payloads/) | JSON exatos enviados à API: ambiente, agente, atualização do agente, as duas sessões e as duas mensagens |
+| [resultados/campo/payloads/](resultados/campo/payloads/) | JSON exatos enviados à API: ambiente, agente, atualização do agente, as cinco sessões e as cinco mensagens |
 | [resultados/campo/sessao-resumo.json](resultados/campo/sessao-resumo.json) | Sessão como a API devolveu (uso, custo, tempos), com o system prompt omitido por ser idêntico ao do repositório |
 | [resultados/campo/sessao-linha-do-tempo.md](resultados/campo/sessao-linha-do-tempo.md) | As 18 chamadas de ferramenta e as 13 chamadas ao modelo |
 | [resultados/campo/sessao-mensagens-do-agente.md](resultados/campo/sessao-mensagens-do-agente.md) | Mensagens do agente, sem edição |

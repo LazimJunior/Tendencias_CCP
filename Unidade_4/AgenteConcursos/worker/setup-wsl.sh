@@ -103,7 +103,9 @@ if ! findmnt -no OPTIONS /workspace/vault/.obsidian 2>/dev/null | tr ',' '\n' | 
 fi
 sudo -k 2>/dev/null || true   # descarta a senha do sudo em cache: o agente herda este terminal
 echo "Worker ativo. Deixe esta janela aberta enquanto usa o agente. Ctrl+C encerra."
-exec ant beta:worker poll --workdir /workspace --max-idle 30m
+# --max-idle: quanto tempo o worker espera numa sessao ociosa antes de pegar a proxima da fila.
+# 30m (valor antigo) prendia a fila por meia hora a cada sessao concluida. Varias janelas = sessoes em paralelo.
+exec ant beta:worker poll --workdir /workspace --max-idle 2m
 EOF
 chmod +x "$HOME/iniciar-worker.sh"
 
