@@ -23,6 +23,7 @@ DEFEITOS = [
     ("Citação não confere os números do valor", 'if not c.get("derivado"):', "if False:"),
     ("Numeração aceita qualquer número", "def plausible(prev, cand):\n", "def plausible(prev, cand):\n    return True\n"),
     ("Ligaduras do PDF não são normalizadas", ".translate(LIGADURAS)", ""),
+    ("Auditoria aceita qualquer bloco de código", 'if m.group("corpo").strip() not in permitidos:', "if False:"),
 ]
 
 

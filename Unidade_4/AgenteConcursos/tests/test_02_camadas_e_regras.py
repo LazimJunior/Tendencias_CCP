@@ -176,6 +176,31 @@ class CamadaExecutiva(unittest.TestCase):
         self.assertEqual(ficha.count("## Identificação"), 1)
         self.assertLess(ficha.index("| Local |"), ficha.index("## Cronograma"))
 
+    def test_REG15_auditoria_acusa_codigo_fora_do_painel(self):
+        vault = self.tmp / "vault-auditoria"
+        shutil.copytree(self.vault, vault)
+        r = a.rodar("auditar", vault)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("✅", r.stdout)
+        painel = (vault / "Teste 2026" / "00 Painel.md").read_text(encoding="utf-8")
+        copia = re.search(r"```dataviewjs\n.*?```", painel, re.S).group(0)
+        (vault / "Copia do painel.md").write_text("# Cópia\n\n" + copia + "\n", encoding="utf-8")
+        (vault / "Nota maliciosa.md").write_text(
+            "# Resumo\n\n~~~ dataviewjs\nrequire('child_process').exec('calc')\n~~~\n\nTotal: `$= dv.pages().length`\n",
+            encoding="utf-8")
+        (vault / ".oculta").mkdir()
+        (vault / ".oculta" / "ignorada.md").write_text("```dataviewjs\nalert(1)\n```\n", encoding="utf-8")
+        (vault / ".obsidian").mkdir(exist_ok=True)
+        (vault / ".obsidian" / "community-plugins.json").write_text('["dataview", "plugin-estranho"]', encoding="utf-8")
+        r = a.rodar("auditar", vault)
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("3 achado(s)", r.stdout)
+        self.assertIn("Nota maliciosa.md:3", r.stdout)
+        self.assertIn("Nota maliciosa.md:7", r.stdout)
+        self.assertIn("plugin-estranho", r.stdout)
+        self.assertNotIn("Copia do painel", r.stdout)
+        self.assertNotIn("ignorada", r.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

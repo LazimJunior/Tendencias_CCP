@@ -80,15 +80,18 @@ bash ~/setup-wsl.sh "C:/Users/SEU_USUARIO/Documents/Obsidian Vault"
 ```bash
 ls /workspace/vault   # lista as notas do vault
 ls /mnt/c             # precisa vir vazio (ou dar erro): o C: não está montado
-~/iniciar-worker.sh   # deixe esta janela aberta enquanto usa o agente
+touch /workspace/vault/.obsidian/teste-escrita   # precisa dar "Read-only file system"
+~/iniciar-worker.sh   # deixe esta janela aberta enquanto usa o agente; não pode aparecer AVISO
 ```
+O `setup-wsl.sh` pode ser rodado de novo a qualquer momento (por exemplo, depois de atualizar o projeto): ele não apaga a chave gravada e, com o vault já montado, o caminho é `/workspace/vault/...`.
 7. No PowerShell, confira se o worker se conectou. Precisa aparecer `"workers_polling":1`:
 ```powershell
 curl.exe -s "https://api.anthropic.com/v1/environments/$env:CONCURSO_ENV_ID/work/stats" -H "Authorization: Bearer $env:ANTHROPIC_API_KEY" -H "anthropic-version: 2026-10-21" -H "anthropic-beta: managed-agents-2026-04-01"
 ```
 
 ## Etapa 4: Obsidian
-1. Abra **Configurações › Plugins da comunidade**, instale o **Dataview**, ative-o e ligue **Enable JavaScript Queries**.
+1. Abra **Configurações › Plugins da comunidade**, instale o **Dataview**, ative-o e ligue **Enable JavaScript Queries** (o Painel precisa). Deixe **Enable Inline JavaScript Queries** desligado.
+   Com essa opção ligada, qualquer bloco `dataviewjs` roda no Windows. O agente roda `concurso.py auditar` ao fim de cada sessão e avisa se achar código fora do Painel: não abra as notas apontadas antes de conferir.
 2. Copie `vault-modelo/_perfil-estudos.md` para a raiz do vault e preencha.
 3. Crie a pasta `_editais/` no vault e coloque os PDFs nela.
 
@@ -132,6 +135,8 @@ python cliente\sessao.py --orcamento 3
 | A sessão não responde | Worker parado. Rode `~/iniciar-worker.sh` no Ubuntu |
 | `wsl --install -d Ubuntu-24.04` dá "Nome de distribuição inválido" | O nome mudou. Use `wsl --install -d Ubuntu` ou veja a lista com `wsl --list --online` |
 | `gravar-chave.sh` responde "isso nao e a chave" | O que foi colado não era a chave (por exemplo, o próprio comando). Copie só a chave no Console e cole com o clique direito |
+| `AVISO: /workspace/vault/.obsidian nao esta somente leitura` | A pasta `.obsidian` não existia quando o WSL montou o vault. Abra o vault no Obsidian uma vez e rode `wsl --shutdown` |
+| O agente avisa que a auditoria achou código | Não abra as notas listadas no Obsidian. Abra o arquivo num editor de texto, confira e apague o bloco se não foi você que o escreveu |
 | `ls /workspace/vault` vazio | Caminho errado no `/etc/fstab` (espaço vira `\040`). Teste manual: `sudo mount -t drvfs 'C:\caminho\do\vault' /workspace/vault` |
 | O agente diz que falta `pymupdf` | Rode `pip install --break-system-packages pymupdf openpyxl` no Ubuntu |
 | Painel do Obsidian mostra o código em vez das tabelas | Dataview desativado ou **Enable JavaScript Queries** desligado |

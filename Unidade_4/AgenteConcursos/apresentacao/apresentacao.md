@@ -86,7 +86,7 @@ Claude Console (Managed Agents) + worker no WSL + vault do Obsidian.
 | Prompt injection no PDF | ✅ sinalizado, texto preservado |
 | Progresso marcado + reexportação | ✅ nenhum `[x]` perdido |
 
-**31/31 casos passando** · teste de mutação: **6/6 defeitos detectados**
+**33/33 casos passando** · teste de mutação: **7/7 defeitos detectados**
 Achado real: ligadura "ﬁ" do PDF quebrava citações corretas (corrigido)
 
 ---

@@ -60,8 +60,11 @@ class SegurancaEConfiguracao(unittest.TestCase):
         self.assertEqual(subprocess.run(["bash", "-n", str(sh)]).returncode, 0)
         txt = sh.read_text(encoding="utf-8")
         for trecho in ("[automount]\nenabled=false", "[interop]\nenabled=false", "appendWindowsPath=false",
-                       "/workspace/vault drvfs", "chmod 600"):
+                       "/workspace/vault drvfs", "chmod 600",
+                       "/workspace/vault/.obsidian /workspace/vault/.obsidian none bind,ro 0 0",
+                       "findmnt -no OPTIONS /workspace/vault/.obsidian", "sudo -k"):
             self.assertIn(trecho, txt)
+        self.assertNotIn("chown -R", txt)  # reexecutar o setup com o vault montado não pode falhar
 
     def test_SEG06_cliente_limita_gasto_e_exportacao_nao_sai_da_pasta(self):
         cli = (a.RAIZ / "cliente" / "sessao.py").read_text(encoding="utf-8")

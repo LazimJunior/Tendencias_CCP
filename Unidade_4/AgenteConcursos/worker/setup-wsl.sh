@@ -25,7 +25,9 @@ ant --version
 
 echo "==> /workspace e ponto de montagem do vault"
 sudo mkdir -p /workspace/vault
-sudo chown -R "$ME" /workspace
+sudo chown "$ME" /workspace
+# Sem -R: numa reexecucao o vault ja esta montado (e .obsidian somente leitura), e o chown recursivo falharia.
+mountpoint -q /workspace/vault || sudo chown "$ME" /workspace/vault
 
 echo "==> Isolamento: o WSL deixa de enxergar o C: inteiro e de executar .exe do Windows"
 sudo tee /etc/wsl.conf >/dev/null <<EOF
@@ -48,6 +50,12 @@ echo "==> Monta SOMENTE a pasta do vault em /workspace/vault"
 VAULT_ESC="$(printf '%s' "$VAULT_WIN" | sed 's/ /\\040/g')"
 sudo sed -i '\#[[:space:]]/workspace/vault[[:space:]]#d' /etc/fstab
 echo "${VAULT_ESC} /workspace/vault drvfs defaults,uid=${UID_N},gid=${GID_N},metadata 0 0" | sudo tee -a /etc/fstab >/dev/null
+
+echo "==> .obsidian somente leitura para o agente (plugins rodam no Windows, fora do isolamento)"
+# O Obsidian no Windows continua gravando normalmente; a restricao vale so dentro do WSL.
+# O agente nao tem a senha do sudo, entao nao consegue desfazer a montagem.
+sudo sed -i '\#^/workspace/vault/.obsidian[[:space:]]#d' /etc/fstab
+echo "/workspace/vault/.obsidian /workspace/vault/.obsidian none bind,ro 0 0" | sudo tee -a /etc/fstab >/dev/null
 
 echo "==> Arquivo de credenciais do worker"
 if [ ! -f "$HOME/.concurso-worker.env" ]; then
@@ -90,6 +98,10 @@ fi
 if [ -d /mnt/c/Windows ]; then
   echo "AVISO: o C: esta acessivel dentro do WSL (isolamento inativo)."
 fi
+if ! findmnt -no OPTIONS /workspace/vault/.obsidian 2>/dev/null | tr ',' '\n' | grep -qx ro; then
+  echo "AVISO: /workspace/vault/.obsidian nao esta somente leitura. Abra o vault no Obsidian uma vez e rode 'wsl --shutdown'."
+fi
+sudo -k 2>/dev/null || true   # descarta a senha do sudo em cache: o agente herda este terminal
 echo "Worker ativo. Deixe esta janela aberta enquanto usa o agente. Ctrl+C encerra."
 exec ant beta:worker poll --workdir /workspace --max-idle 30m
 EOF

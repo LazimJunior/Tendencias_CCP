@@ -18,6 +18,8 @@ test_CEN09_progresso_marcado_nunca_e_sobrescrito (test_01_cenarios_principais.Ce
 CEN-09 - reexportar o mesmo concurso preserva os [x] marcados e gera _atualizacao-<data>. ... ok
 test_CEN10_mesma_entrada_mesma_saida (test_01_cenarios_principais.CenariosPrincipais.test_CEN10_mesma_entrada_mesma_saida)
 CEN-10 - consistência: o mesmo edital, processado duas vezes, gera arquivos idênticos. ... ok
+test_CEN11_injecao_que_pede_codigo_no_obsidian (test_01_cenarios_principais.CenariosPrincipais.test_CEN11_injecao_que_pede_codigo_no_obsidian)
+CEN-11 - injeção sem palavras clássicas, pedindo dataviewjs e plugin: é sinalizada e o texto fica no edital. ... ok
 test_REG07_bloco_movido_sem_perda_e_aviso_e_nao_reprovacao (test_02_camadas_e_regras.CamadaDecisoria.test_REG07_bloco_movido_sem_perda_e_aviso_e_nao_reprovacao) ... ok
 test_REG08_copia_em_outro_cargo_nao_mascara_omissao (test_02_camadas_e_regras.CamadaDecisoria.test_REG08_copia_em_outro_cargo_nao_mascara_omissao) ... ok
 test_REG09_citacao_aceita_data_por_extenso_e_rejeita_numero_inventado (test_02_camadas_e_regras.CamadaDecisoria.test_REG09_citacao_aceita_data_por_extenso_e_rejeita_numero_inventado) ... ok
@@ -26,6 +28,7 @@ test_REG11_painel_dataview_tem_javascript_valido (test_02_camadas_e_regras.Camad
 test_REG12_notas_de_disciplina_tem_checklist_literal_e_pesos (test_02_camadas_e_regras.CamadaExecutiva.test_REG12_notas_de_disciplina_tem_checklist_literal_e_pesos) ... ok
 test_REG13_planilha_e_anki (test_02_camadas_e_regras.CamadaExecutiva.test_REG13_planilha_e_anki) ... ok
 test_REG14_ficha_agrupa_secao_repetida_num_bloco_so (test_02_camadas_e_regras.CamadaExecutiva.test_REG14_ficha_agrupa_secao_repetida_num_bloco_so) ... ok
+test_REG15_auditoria_acusa_codigo_fora_do_painel (test_02_camadas_e_regras.CamadaExecutiva.test_REG15_auditoria_acusa_codigo_fora_do_painel) ... ok
 test_REG01_cabecalho_e_rodape_repetidos_sao_removidos (test_02_camadas_e_regras.CamadaPerceptiva.test_REG01_cabecalho_e_rodape_repetidos_sao_removidos) ... ok
 test_REG02_armadilhas_de_numeracao_nao_quebram_topicos (test_02_camadas_e_regras.CamadaPerceptiva.test_REG02_armadilhas_de_numeracao_nao_quebram_topicos) ... ok
 test_REG03_linha_quebrada_que_comeca_com_numero_nao_vira_item (test_02_camadas_e_regras.CamadaPerceptiva.test_REG03_linha_quebrada_que_comeca_com_numero_nao_vira_item) ... ok
@@ -41,6 +44,6 @@ test_SEG06_cliente_limita_gasto_e_exportacao_nao_sai_da_pasta (test_03_seguranca
 test_SEG07_chave_do_worker_so_e_gravada_se_for_chave (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG07_chave_do_worker_so_e_gravada_se_for_chave) ... ok
 
 ----------------------------------------------------------------------
-Ran 31 tests in 26.434s
+Ran 33 tests in 25.578s
 
 OK

@@ -10,6 +10,8 @@ Subcomandos (rode `python concurso.py <cmd> -h`):
   obsidian   gera a pasta do concurso para o vault Obsidian
   xlsx       edital verticalizado + painel de prioridade em planilha
   anki       exporta flashcards (Pergunta::Resposta) do vault para TSV do Anki
+  comparar   lista o que mudou no conteudo programatico entre dois verticalizados
+  auditar    procura no vault codigo que o Obsidian executaria (dataviewjs, $=, plugins) fora do Painel
 """
 import argparse, bisect, difflib, json, re, sys, unicodedata
 from collections import Counter
@@ -37,6 +39,7 @@ INJECAO = [
     (r"</?\s*(system|instructions?|assistant|user)\s*>", "delimitador falso de conversa"),
     (r"(rm\s+-rf|curl\s+-[a-zA-Z]|wget\s+https?://|powershell|bash\s+-c)", "comando de terminal embutido"),
     (r"\b(envie|mande|publique|exfiltre|copie|transfira)\b.{0,60}\b(chave|token|senha|credencia|api[\s_-]?key|arquivos?\s+do)", "pedido de exfiltracao"),
+    (r"(dataviewjs|\.obsidian\b|`\$=|<\s*script|plugins?/[\w.-]+/main\.js)", "pedido de codigo executavel no Obsidian"),
 ]
 
 
@@ -881,6 +884,62 @@ def cmd_comparar(a):
     print(txt)
 
 
+# ---------------------------------------------------------------- auditoria de código executável no vault
+# O Obsidian executa blocos dataviewjs (e consultas inline $=) no Windows, com acesso ao Node.
+# O único código legítimo no vault é o do Painel gerado por este script. Qualquer outro bloco
+# é tratado como suspeito: pode ter sido escrito por engano ou por prompt injection.
+CERCA_JS = re.compile(r"^(?P<cerca>`{3,}|~{3,})[ \t]*(?P<lang>dataviewjs|js-engine)\b[^\n]*\n(?P<corpo>.*?)^(?P=cerca)[ \t]*$",
+                      re.M | re.S | re.I)
+INLINE_JS = re.compile(r"`\$=")
+
+
+def blocos_permitidos():
+    return {m.group("corpo").strip() for m in CERCA_JS.finditer(PAINEL)}
+
+
+def cmd_auditar(a):
+    raiz = Path(a.vault)
+    if not raiz.is_dir():
+        sys.exit(f"Vault não encontrado: {raiz}")
+    permitidos = blocos_permitidos()
+    plugins_ok = {p.strip() for p in a.plugins.split(",") if p.strip()}
+    achados, notas = [], 0
+    for f in sorted(raiz.rglob("*.md")):
+        rel = f.relative_to(raiz)
+        if any(p.startswith(".") for p in rel.parts[:-1]):  # o Obsidian não abre pastas ocultas
+            continue
+        notas += 1
+        txt = f.read_text(encoding="utf-8", errors="ignore")
+        for m in CERCA_JS.finditer(txt):
+            if m.group("corpo").strip() not in permitidos:
+                linha = txt.count("\n", 0, m.start()) + 1
+                prim = next((l.strip() for l in m.group("corpo").splitlines() if l.strip()), "")
+                achados.append((str(rel), linha, f"bloco `{m.group('lang')}` diferente dos do Painel", prim))
+        for m in INLINE_JS.finditer(txt):
+            linha = txt.count("\n", 0, m.start()) + 1
+            achados.append((str(rel), linha, "consulta JavaScript inline (`$=`)", txt[m.start():m.start() + 60].splitlines()[0]))
+    cp = raiz / ".obsidian" / "community-plugins.json"
+    if cp.exists():
+        try:
+            ativos = json.loads(cp.read_text(encoding="utf-8"))
+        except ValueError:
+            ativos = ["<arquivo ilegível>"]
+        for p in ativos:
+            if p not in plugins_ok:
+                achados.append((".obsidian/community-plugins.json", 0, "plugin ativo fora da lista permitida", str(p)))
+    out = ["# Auditoria de código no vault", ""]
+    if not achados:
+        out.append(f"✅ Nenhum código fora do Painel em {notas} notas. Plugins ativos dentro da lista permitida.")
+    else:
+        out.append(f"❌ {len(achados)} achado(s) em {notas} notas. NÃO abra estas notas no Obsidian antes de conferir o conteúdo:")
+        out.append("")
+        for arq, linha, motivo, trecho in achados:
+            pos = f"{arq}:{linha}" if linha else arq
+            out.append(f"- **{pos}**: {motivo} → `{trecho[:80]}`")
+    print("\n".join(out))
+    sys.exit(1 if achados else 0)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sp = ap.add_subparsers(dest="cmd", required=True)
@@ -900,6 +959,9 @@ def main():
     s.add_argument("--horas", type=float, default=15)
     s = sp.add_parser("anki"); s.add_argument("pasta"); s.add_argument("--saida", required=True)
     s = sp.add_parser("comparar"); s.add_argument("antigo"); s.add_argument("novo"); s.add_argument("--saida")
+    s = sp.add_parser("auditar", help="procura no vault código que o Obsidian executaria fora do Painel")
+    s.add_argument("vault"); s.add_argument("--plugins", default="dataview",
+                   help="plugins da comunidade permitidos, separados por vírgula")
     a = ap.parse_args()
     globals()["cmd_" + a.cmd](a)
 

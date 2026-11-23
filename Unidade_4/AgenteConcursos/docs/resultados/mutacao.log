@@ -1,12 +1,13 @@
-Script original: 31 testes, 0 falhas
+Script original: 33 testes, 0 falhas
 
 | Defeito introduzido | Testes que falharam |
 |---|---|
 | Cobertura ignora texto faltando | 2 |
-| Detecção de prompt injection desligada | 1 |
+| Detecção de prompt injection desligada | 2 |
 | Proteção do progresso desligada | 1 |
 | Citação não confere os números do valor | 2 |
 | Numeração aceita qualquer número | 1 |
 | Ligaduras do PDF não são normalizadas | 2 |
+| Auditoria aceita qualquer bloco de código | 1 |
 
-Defeitos detectados: 6 de 6
+Defeitos detectados: 7 de 7

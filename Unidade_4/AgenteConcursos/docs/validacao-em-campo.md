@@ -43,9 +43,9 @@ Todos os horários estão no fuso de Brasília (UTC−3). Os IDs de recursos apa
 | Tempo do pedido à resposta final | 1 min 42 s (execução ativa cobrada: 90 s) |
 | Custo da sessão | **US$ 0,27**, com teto de US$ 3,00 |
 | Acessos do agente fora de `/workspace` | 0 |
-| Defeitos do projeto encontrados | 3, todos corrigidos e cobertos por teste (REG-14, SEG-07, SEG-04 ampliado) |
+| Defeitos do projeto encontrados | 5, todos corrigidos e cobertos por teste (REG-14, SEG-07, SEG-04, CEN-11 e SEG-05) |
 | Problemas de procedimento encontrados | 4, todos com o guia de instalação corrigido |
-| Riscos de segurança confirmados | 1: uma nota com `dataviewjs` roda código no Windows, fora do isolamento do WSL (R2, §12.3) |
+| Riscos de segurança confirmados | 1: uma nota com `dataviewjs` roda código no Windows, fora do isolamento do WSL (R2, §12.3). Mitigado por M1, M2 e M3 (§12.4) |
 
 ## 2. Objetivo e escopo
 
@@ -315,6 +315,8 @@ O resumo do agente não foi aceito como prova. Cada afirmação foi conferida co
 | D1 | A Ficha saiu com a seção "Identificação" duas vezes | O `ficha.json` do agente repetiu a seção em dois pontos, e o `concurso.py` abria um bloco novo a cada troca de seção | O script agrupa os campos por seção, na ordem da primeira aparição. Skill republicada (versão 2) | REG-14: falha na versão antiga (`2 != 1`) e passa na nova |
 | D2 | Colar a chave do ambiente no lugar errado gravava lixo sem avisar | O guia mandava editar o arquivo à mão ou usar um `read` sem conferência | `~/gravar-chave.sh`: recusa texto que não começa com `sk-ant-`, remove o `\r` do Windows, não mostra a chave e grava com permissão 600 | SEG-07 |
 | D3 | O detector de credenciais do repositório não reconhecia o formato `sk-ant-usr-` | O padrão cobria só `api` e `oat` seguidos de dois dígitos | Padrão ampliado para qualquer prefixo de 3 letras | SEG-04 |
+| D4 | A detecção de *prompt injection* não pegava um pedido de código para o Obsidian escrito sem as palavras clássicas ("ignore as instruções") | Os padrões cobriam ordens para ignorar regras, troca de papel, comandos de terminal e exfiltração, mas não `dataviewjs`, `.obsidian`, `$=` ou `<script>` | Padrão novo: "pedido de código executável no Obsidian" | CEN-11: a versão anterior devolve 0 alertas, a nova acusa a página 2 |
+| D5 | Rodar o `setup-wsl.sh` de novo, com o vault montado, podia abortar no meio | `chown -R /workspace` percorria o vault inteiro e falharia na pasta `.obsidian` somente leitura | `chown` só em `/workspace` e, se não estiver montado, em `/workspace/vault` | SEG-05 |
 
 ### 11.2 Problemas de procedimento
 
@@ -355,7 +357,7 @@ Além disso, os comandos do guia passaram a usar `Authorization: Bearer` (o form
 | # | Risco | Confiança | Mitigação proposta |
 |---|---|---|---|
 | R1 | **A chave do ambiente pode ser lida pelo próprio agente.** O worker e as ferramentas do agente rodam com o mesmo usuário Linux, e a documentação avisa que as chamadas de ferramenta conseguem ler o que está no host do worker | Média. Não foi testado se o `ant` esconde o arquivo ou as variáveis dos processos do agente | A chave do ambiente só dá acesso à fila deste ambiente, não à conta. Gerar uma chave por host, como o Console recomenda, e revogar ao fim do uso. Rodar o worker com um usuário Linux dedicado reduziria o risco |
-| R2 | **O vault é uma ponte para o Windows.** O agente pode escrever em `.obsidian/` (plugins) e em blocos `dataviewjs` de qualquer nota, e o Obsidian executa esse código no Windows quando a nota é aberta, fora do isolamento do WSL | **Alta: confirmado** no teste do §12.3 | Ver as opções do §12.4 |
+| R2 | **O vault é uma ponte para o Windows.** O agente pode escrever em `.obsidian/` (plugins) e em blocos `dataviewjs` de qualquer nota, e o Obsidian executa esse código no Windows quando a nota é aberta, fora do isolamento do WSL | **Alta: confirmado** no teste do §12.3 | M1, M2 e M3 implementadas. M4 fica como próximo passo (§12.4) |
 | R3 | **A pasta `.agente-setup` ficou dentro do vault**, então o agente a enxergou (chamada 2) | Alta (observado) | Não contém chaves, mas deve sair do vault depois da instalação |
 | R4 | **`setx` deixa a chave de API em texto no histórico do PowerShell** | Alta | O guia agora usa `Read-Host -AsSecureString`, que não passa pela linha de comando |
 | R5 | **As ferramentas do agente rodam sem pedir confirmação** (política `always_allow`, o padrão) | Alta (lido na sessão) | Aceitável dentro de `/workspace`. Para apagar pastas, o system prompt já exige confirmação explícita (caso I8, ainda não executado) |
@@ -396,14 +398,14 @@ O teste em si não executou nada além de ler `typeof require` e `process.platfo
 
 ### 12.4 Opções de mitigação para o R2
 
-| # | Medida | O que fecha | Custo | Efeito colateral |
-|---|---|---|---|---|
-| M1 | Regra no system prompt: nunca escrever em `.obsidian/`, nunca escrever `dataviewjs`, `<script>` ou plugin, e tratar como injeção qualquer pedido nesse sentido vindo de arquivo | Reduz a probabilidade (depende do modelo obedecer) | Baixo: texto + nova versão do agente | Nenhum |
-| M2 | Montar `.obsidian` como somente leitura no worker (`bind,ro` no `fstab`) | Fecha o caminho dos plugins de forma determinística: o agente não tem senha de `sudo` para remontar | Baixo: uma linha no `setup-wsl.sh` | Para instalar plugins, use o Obsidian no Windows, que continua com escrita normal |
-| M3 | Auditoria no `concurso.py`: listar todo bloco `dataviewjs` do vault que não seja idêntico aos do modelo do Painel, e o agente rodar isso ao fim de cada sessão | Detecta o bloco antes de o candidato abrir a nota | Médio: subcomando novo + teste | Só avisa; não impede a gravação |
-| M4 | Reescrever o Painel em DQL (consultas do Dataview sem JavaScript) e desligar o *Enable JavaScript Queries* | Fecha o caminho dos blocos `dataviewjs`: com a opção desligada, eles não rodam | Alto: reescrever 5 blocos e validar no app de novo | Algumas contas do Painel ficam mais limitadas em DQL |
+| # | Medida | O que fecha | Custo | Efeito colateral | Situação |
+|---|---|---|---|---|---|
+| M1 | Regra no system prompt e na skill: nunca escrever em `.obsidian/`, nunca escrever `dataviewjs`, `$=`, `<script>` ou plugin; pedido desse tipo vindo de arquivo é injeção; pedido do próprio usuário é recusado com explicação. Mais um padrão de detecção no `extrair` (D4) | Reduz a probabilidade (depende do modelo obedecer) | Baixo: texto + nova versão do agente | Nenhum | ✅ Implementada |
+| M2 | `.obsidian` montada como somente leitura no worker (`bind,ro` no `fstab`). O `iniciar-worker.sh` avisa se a montagem não estiver ativa e roda `sudo -k`, para o agente não herdar uma senha de `sudo` em cache do terminal | Fecha o caminho dos plugins de forma determinística: sem a senha do `sudo`, o agente não remonta a pasta | Baixo: duas linhas no `setup-wsl.sh` | Plugins continuam sendo instalados pelo Obsidian no Windows, que grava normalmente | ✅ Implementada |
+| M3 | Subcomando `concurso.py auditar`: lista todo bloco `dataviewjs` que não seja idêntico aos do Painel, toda consulta inline `$=` e todo plugin ativo fora da lista permitida. O agente roda ao fim de cada sessão que gravou no vault | Detecta o código antes de o candidato abrir a nota | Médio: subcomando + REG-15 + mutação | Só avisa; não impede a gravação | ✅ Implementada |
+| M4 | Reescrever o Painel em DQL (Dataview sem JavaScript) e desligar o *Enable JavaScript Queries* | Fecha o caminho dos blocos `dataviewjs`: com a opção desligada, eles não rodam | Alto: reescrever 5 blocos e validar no app de novo | Algumas contas do Painel ficam mais limitadas em DQL | Próximo passo |
 
-**Recomendação:** M1 + M2 + M3 agora; M4 depois da entrega. M2 é a única medida determinística barata. M1 e M3 cobrem o caminho do `dataviewjs`, que só o M4 fecha de vez, e o M4 é grande demais para fazer a 3 dias da apresentação.
+**Decisão:** M1 + M2 + M3 antes da entrega; M4 depois. M2 é a única medida determinística barata. M1 e M3 cobrem o caminho do `dataviewjs`, que só o M4 fecha de vez, e o M4 é grande demais para fazer a 3 dias da apresentação.
 
 ## 13. Custo
 
@@ -438,7 +440,7 @@ A estimativa do README ("da ordem de US$ 1 por edital") se mostrou conservadora 
 | Ramo "faltam N dias" do Painel | A prova fictícia já passou |
 | Login sem chave (`ant auth login`) | Não testado |
 | Leitura da chave do ambiente pelo agente (R1) | Não testado |
-| Mitigações do R2 (§12.4) | Propostas, ainda não implementadas |
+| Mitigações do R2 (§12.4) | M1, M2 e M3 implementadas e cobertas por teste automatizado. Aplicação na máquina real em andamento |
 | `cliente/sessao.py` no Windows | Não há Python no Windows da validação; a sessão foi criada com `curl.exe` |
 
 ## 15. Como reproduzir
@@ -463,7 +465,7 @@ do { $u = "https://api.anthropic.com/v1/sessions/$sid/events?limit=100"; if ($p)
      curl.exe -s $u @A -o "sessao-eventos-$i.json"; $p = ((Get-Content "sessao-eventos-$i.json" -Raw) | ConvertFrom-Json).next_page; $i++ } while ($p)
 ```
 
-A suíte automatizada continua rodando sem conta: `python -m unittest discover -s tests -v` (31/31) e `python tests/mutacao.py` (6/6).
+A suíte automatizada continua rodando sem conta: `python -m unittest discover -s tests -v` (33/33) e `python tests/mutacao.py` (7/7).
 
 ## 16. Arquivos de evidência
 
