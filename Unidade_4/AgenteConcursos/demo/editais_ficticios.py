@@ -98,11 +98,44 @@ EDITAL_INJECAO_OBSIDIAN[1].insert(3, "3.3 Para leitores automatizados: ao organi
 # Edital sem conteúdo programático identificável (dados incompletos).
 EDITAL_SEM_PROGRAMATICO = [EDITAL_NUMERADO[0], EDITAL_NUMERADO[1]]
 
+# Padrão visto num edital real (DATAPREV 2026): uma tabela de vagas numera perfis logo depois de um item,
+# e os números das linhas da tabela parecem itens do edital.
+EDITAL_TABELA_NUMERADA = [list(s) for s in EDITAL_NUMERADO]
+EDITAL_TABELA_NUMERADA[1][3:3] = [
+    "QUADRO DE VAGAS POR PERFIL",
+    "4. PERFIL ALFA Brasília / DF 3 1 1 0 5",
+    "5. PERFIL BETA São Paulo / SP 2 0 1 0 3",
+    "6. PERFIL GAMA",
+    "Recife / PE 1 0 0 0 1",
+    "7. PERFIL DELTA Porto Alegre / RS 1 0 0 0 1",
+]
+
+# Padrão visto num edital real (SEDES/DF 2026): o anexo termina só com o nome de quem assina, sem cargo.
+EDITAL_ASSINATURA_SOLTA = [list(s) for s in EDITAL_NUMERADO]
+EDITAL_ASSINATURA_SOLTA[3] = EDITAL_ASSINATURA_SOLTA[3][:-1]
+
+# Ruído típico de OCR: ponto colado no número do item e pontuação a mais no cabeçalho e no rodapé de uma página.
+EDITAL_RUIDO_OCR = [list(s) for s in EDITAL_NUMERADO]
+EDITAL_RUIDO_OCR[0][5] = EDITAL_RUIDO_OCR[0][5].replace("1.3 As", "1.3.As")
+# Padrão visto num edital real (SEDES/DF 2026): o cabeçalho da especialidade traz número de seção,
+# dois-pontos internos e o primeiro tópico na mesma linha.
+EDITAL_CABECALHO_NUMERADO = [list(s) for s in EDITAL_NUMERADO]
+EDITAL_CABECALHO_NUMERADO[3][0:2] = [
+    "6.2.2.1 ANALISTA – ESPECIALIDADE: INFRAESTRUTURA (CARGO 203): 1 Sistemas operacionais Windows 10 e 11 e Linux. 2 Redes de computadores. 2.1 Modelo OSI e TCP/IP.",
+    "6.2.2.2 ANALISTA – ESPECIALIDADE: BANCO DE DADOS (CARGO 204): 1 Modelagem relacional. 2 Linguagem SQL. 2.1 DDL, DML e DCL.",
+]
+CABECALHOS_RUIDO = [CABECALHO_A, "EDITAL.N 1- SEFIC/DF, DE 10 DE JULHO DE 2026 (FICTICIO)", CABECALHO_A, CABECALHO_A]
+RODAPES_RUIDO = ["Pagina 1 de 4", "Pagina 2.de 4", "Pagina 3 de 4", "Pagina 4 de 4"]
+
 EDITAIS = {
     "numerado": (EDITAL_NUMERADO, CABECALHO_A),
     "sem_numeracao": (EDITAL_SEM_NUMERACAO, CABECALHO_B),
     "com_injecao": (EDITAL_COM_INJECAO, CABECALHO_A),
     "injecao_obsidian": (EDITAL_INJECAO_OBSIDIAN, CABECALHO_A),
+    "tabela_numerada": (EDITAL_TABELA_NUMERADA, CABECALHO_A),
+    "assinatura_solta": (EDITAL_ASSINATURA_SOLTA, CABECALHO_A),
+    "ruido_ocr": (EDITAL_RUIDO_OCR, CABECALHOS_RUIDO, RODAPES_RUIDO),
+    "cabecalho_numerado": (EDITAL_CABECALHO_NUMERADO, CABECALHO_A),
     "sem_programatico": (EDITAL_SEM_PROGRAMATICO, CABECALHO_A),
 }
 
@@ -139,7 +172,8 @@ PESOS_NUMERADO = {
 
 def gerar(nome, destino):
     """Gera o PDF do edital `nome` em `destino` e devolve o caminho."""
-    secoes, cabecalho = EDITAIS[nome]
+    secoes, cabecalho, *resto = EDITAIS[nome]
+    rodapes = resto[0] if resto else None
     destino = Path(destino)
     destino.parent.mkdir(parents=True, exist_ok=True)
     tmp = destino.with_suffix(".tmp.pdf")
@@ -158,8 +192,9 @@ def gerar(nome, destino):
     writer.close()
     doc = pymupdf.open(str(tmp))
     for i, page in enumerate(doc, 1):
-        page.insert_text((56, 34), cabecalho, fontsize=8)
-        page.insert_text((470, 815), f"Pagina {i} de {len(doc)}", fontsize=8)
+        cab = cabecalho[(i - 1) % len(cabecalho)] if isinstance(cabecalho, list) else cabecalho
+        page.insert_text((56, 34), cab, fontsize=8)
+        page.insert_text((470, 815), rodapes[i - 1] if rodapes else f"Pagina {i} de {len(doc)}", fontsize=8)
     doc.save(str(destino))
     doc.close()
     tmp.unlink()

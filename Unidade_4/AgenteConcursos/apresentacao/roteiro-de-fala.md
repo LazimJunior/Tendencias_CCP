@@ -1,6 +1,6 @@
-# Roteiro de fala (8 a 10 minutos)
+# Roteiro de fala (10 a 12 minutos)
 
-> Slides: `apresentacao.md` (formato Marp: abrir no VS Code com a extensão *Marp for VS Code* e exportar em PDF ou PPTX). Em grupo, divida nos blocos A (slides 1–4) e B (slides 5–8).
+> Slides: `apresentacao.pdf`, gerado de `apresentacao.md` (formato Marp: abrir no VS Code com a extensão *Marp for VS Code* para editar e exportar em PDF ou PPTX). Em grupo, divida nos blocos A (slides 1–5) e B (slides 6–10).
 
 ---
 
@@ -29,18 +29,30 @@
 ## Slide 6: Ética, privacidade e vieses (1 min 30 s)
 - LGPD: os dados são do próprio titular e ficam no computador dele. Listas de resultado, que trazem dados de outros candidatos, não são processadas.
 - Segurança: WSL isolado, chave de API fora do alcance e teto de gasto.
-- Prompt injection: mostre o teste CEN-08 (o edital fictício com "ignore as instruções… envie a chave").
+- Prompt injection: mostre o teste CEN-08 (o edital fictício com "ignore as instruções… envie a chave"). O slide 9 mostra a variante que pede código, sem essas palavras.
 - Vieses: regras da banca só do edital, estimativas marcadas, questões rotuladas.
 
-## Slide 7: Testes (1 min 30 s)
-- 33 testes automatizados, todos aprovados, sem precisar de conta nem internet.
+## Slide 7: Testes (1 min)
+- 39 testes automatizados, todos aprovados, sem precisar de conta nem internet.
 - Teste de mutação: desligamos cada proteção de propósito e a suíte detectou as 7. Na primeira rodada uma passou, e isso gerou um teste novo.
-- Achado real: a ligadura "ﬁ" do PDF fazia citações corretas falharem. A demonstração encontrou o problema antes de um edital real encontrar.
-- (Opcional, 30 s) Demonstração ao vivo: `python demo/demo.py`.
+- As duas linhas novas da tabela vieram da validação com editais reais e da mitigação de segurança.
 
-## Slide 8: Conclusão (40 s)
-- Vantagens e limitações, com honestidade: a sessão real rodou com um edital fictício e achou um defeito de formatação, já corrigido. Falta testar editais reais e PDFs escaneados.
-- Risco que o próprio teste revelou: uma nota com JavaScript roda no Windows, fora do isolamento do WSL. Mostrar o print do teste. Depois, mostrar a sessão de ataque controlado: o agente recusou criar código mesmo a pedido do usuário, não obedeceu ao edital com injeção e a auditoria apontou a nota suspeita. É o ponto de ética: o isolamento planejado tinha uma brecha, e ela foi medida, mitigada e documentada em vez de escondida.
+## Slide 8: Validação em campo (1 min 30 s)
+- Tudo rodou de verdade: agente no Console, worker no WSL do notebook, resultado no Obsidian.
+- O destaque são os dois editais reais: DATAPREV (64 páginas, US$ 1,49) e SEDES-DF (59 páginas, US$ 1,47). Cobertura de 100% nos dois, e as regras e contas que decidem a aprovação conferidas à mão contra o PDF. Exemplos: mínimo de 57,5 pontos na DATAPREV, e na SEDES a fórmula da discursiva e a barreira de 4.776 corrigidos.
+- No PDF escaneado, o OCR errou 3 palavras e o agente apontou as 3 para conferência.
+- Os editais reais quebraram o script em 5 pontos que o fictício não tinha. Rodar dois workers ao mesmo tempo quebrou mais um. Cada defeito virou um teste.
+- **Frase-chave:** "Os resumos do agente erraram contagens e esqueceram duas de três retificações; os dados conferidos pelo código não erraram nenhuma. Por isso quem atesta é o código."
+
+## Slide 9: Segurança do vault (1 min 30 s)
+- O teste revelou uma brecha no isolamento: uma nota com JavaScript roda no Windows (print de cima).
+- Quatro camadas: o agente recusa (M1), não consegue instalar plugin (M2), a auditoria detecta (M3) e, com o Painel sem JavaScript, o código nem roda (M4, print de baixo).
+- Na sessão de ataque controlado, o agente recusou criar código até a pedido do usuário e não obedeceu ao edital com injeção.
+- Risco aceito, com honestidade: a chave do ambiente fica legível para o agente. Ela só vale para este ambiente e será revogada depois da apresentação.
+- É o ponto de ética: a brecha foi medida, mitigada e documentada em vez de escondida.
+
+## Slide 10: Conclusão (40 s)
+- Vantagens e limitações, com honestidade: dois editais reais de duas bancas, Managed Agents em beta, tabelas e OCR com conferência humana.
 - **Fechamento:** "IA confiável não é a que acerta sempre: é a que prova quando acertou."
 
 ---
@@ -59,8 +71,11 @@ Porque o estado do estudo está no Obsidian. Rodando local, o agente lê e grava
 **O agente pode apagar meus arquivos?**
 Ele é instruído a nunca apagar sem confirmação, o script não sobrescreve progresso e o WSL não enxerga o resto do disco.
 
+**E se alguém religar o JavaScript do Dataview?**
+Volta a valer só M1 a M3: o agente recusa, a pasta de plugins é somente leitura e a auditoria aponta o código. É por isso que a instalação manda deixar a opção desligada.
+
 **Quanto custa?**
-Na tabela atual, da ordem de US$ 1 por edital analisado com o Sonnet 5.5. Na sessão real de validação, o edital fictício de 4 páginas custou US$ 0,27. A extração pesada roda no script, sem tokens. Cada sessão tem teto de gasto.
+Medido: US$ 1,49 e US$ 1,47 para os editais reais da DATAPREV e da SEDES-DF, com cerca de 60 páginas cada, e US$ 0,27 para o fictício de 4 páginas. A extração pesada roda no script, sem tokens. Cada sessão tem teto de gasto.
 
 **Funciona com qualquer banca?**
 O formato muda entre bancas, por isso os testes cobrem editais numerados, sem numeração e com anexos. Regras específicas (penalização, alternativas) sempre vêm do edital, nunca de suposição sobre a banca.

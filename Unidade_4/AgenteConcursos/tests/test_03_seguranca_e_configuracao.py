@@ -62,7 +62,8 @@ class SegurancaEConfiguracao(unittest.TestCase):
         for trecho in ("[automount]\nenabled=false", "[interop]\nenabled=false", "appendWindowsPath=false",
                        "/workspace/vault drvfs", "chmod 600",
                        "/workspace/vault/.obsidian /workspace/vault/.obsidian none bind,ro 0 0",
-                       "findmnt -no OPTIONS /workspace/vault/.obsidian", "sudo -k"):
+                       "findmnt -no OPTIONS /workspace/vault/.obsidian", "sudo -k",
+                       "flock -n 9"):  # um worker por vez (D11)
             self.assertIn(trecho, txt)
         self.assertNotIn("chown -R", txt)  # reexecutar o setup com o vault montado não pode falhar
 

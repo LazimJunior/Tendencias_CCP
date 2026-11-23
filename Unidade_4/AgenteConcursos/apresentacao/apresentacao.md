@@ -69,7 +69,7 @@ Claude Console (Managed Agents) + worker no WSL + vault do Obsidian.
 
 - **LGPD:** dados só do titular, no computador dele. Listas de candidatos (dados de terceiros) ficam **fora**
 - **Segurança:** WSL sem acesso ao C: nem ao Windows. Chave de API fora do alcance do agente. Teto de gasto por sessão
-- **Prompt injection:** PDF com "ignore as instruções…" é sinalizado e **não obedecido**
+- **Prompt injection:** PDF com "ignore as instruções…" ou pedindo código é sinalizado e **não obedecido**
 - **Vieses:** regras da banca só do edital, estimativas marcadas, incidência neutra sem dado real, questões rotuladas como inéditas
 - **Transparência:** item e página em cada dado, relatório de cobertura no vault
 
@@ -79,22 +79,61 @@ Claude Console (Managed Agents) + worker no WSL + vault do Obsidian.
 
 | Cenário | Resultado |
 |---|---|
-| Edital numerado / sem numeração | ✅ cobertura 100% |
-| IA omite, inventa, resume ou duplica | ✅ reprovado |
-| Citação errada na ficha | ✅ reprovada |
-| Retificação / reexecução | ✅ aplicada 1 vez, rastreável |
-| Prompt injection no PDF | ✅ sinalizado, texto preservado |
-| Progresso marcado + reexportação | ✅ nenhum `[x]` perdido |
+| Edital numerado / sem numeração | ✓ cobertura 100% |
+| IA omite, inventa, resume ou duplica | ✓ reprovado |
+| Citação errada na ficha | ✓ reprovada |
+| Retificação / reexecução | ✓ aplicada 1 vez, rastreável |
+| Prompt injection no PDF | ✓ sinalizado, texto preservado |
+| Progresso marcado + reexportação | ✓ nenhum `[x]` perdido |
+| Padrões de editais reais (quadro de vagas, OCR, cabeçalhos) | ✓ 5 casos novos, um por defeito achado |
+| Painel sem JavaScript | ✓ nenhum `dataviewjs`, auditoria limpa |
 
-**33/33 casos passando** · teste de mutação: **7/7 defeitos detectados**
-Achado real: ligadura "ﬁ" do PDF quebrava citações corretas (corrigido)
+**39/39 casos passando**, sem conta nem internet · teste de mutação: **7/7 defeitos detectados**
+
+---
+
+## Validação em campo (23/11/2026)
+
+| Sessão (Console + worker no WSL) | Resultado conferido | Custo |
+|---|---|---|
+| Edital fictício, 4 páginas | cobertura 100% · 27 citações · 1 min 42 s | US$&nbsp;0,27 |
+| **Edital real DATAPREV 2026, 64 páginas** | cobertura 100% · 68 citações · **11/11 regras e contas conferidas no PDF** · 8 min | **US$&nbsp;1,49** |
+| **Edital real SEDES-DF 2026, 59 páginas** | cobertura 100% · 91 citações · **12/12 conferidas**, com discursiva e barreira · 7 min | **US$&nbsp;1,47** |
+| PDF escaneado (OCR) | cobertura 100% · **3 de 3 erros de leitura apontados** | US$&nbsp;0,08 |
+| Ataque controlado | 5/5 verificações | US$&nbsp;0,08 |
+
+- **11 defeitos achados e corrigidos**, cada um virou teste. 5 vieram dos editais reais e do OCR, e 1 de dois workers rodando ao mesmo tempo
+- Os resumos em texto do agente erraram contagens e omitiram 2 de 3 retificações. **Nenhum dado conferido por código errou**
+
+---
+
+<style scoped>
+section { font-size: 21px; }
+table { font-size: 17px; }
+</style>
+
+## Segurança do vault
+
+![bg vertical right:34% fit](img/r2-dataviewjs-no-windows.png)
+![bg fit](img/m4-bloco-js-bloqueado.png)
+
+**Risco confirmado no teste:** uma nota com `dataviewjs` roda no Windows, com acesso ao Node, fora do WSL. Um edital com injeção poderia usar o agente para plantar código.
+
+| # | Mitigação | Efeito | Em campo |
+|---|---|---|---|
+| M1 | Regra no prompt + detecção | agente recusa | ✓ recusou até a pedido do usuário |
+| M2 | `.obsidian` somente leitura, sem `sudo` | plugins bloqueados | ✓ |
+| M3 | `auditar` ao fim da sessão | código detectado | ✓ acusou a nota de teste |
+| M4 | Painel só DQL, JavaScript desligado | **código não roda** | ✓ Painel inteiro funcionando |
+
+**Risco aceito:** a chave do ambiente é legível pelo agente. Vale só para este ambiente e será revogada após a apresentação.
 
 ---
 
 ## Conclusão
 
-**Vantagens:** fidelidade comprovável · estudo num lugar só · custo baixo (US$ 0,27 medido no edital de teste; ~US$ 1 estimado por edital real)
-**Limitações:** validado só com edital fictício (Managed Agents em beta) · tabelas/OCR exigem conferência · heurísticas · nota com `dataviewjs` roda no Windows (risco confirmado no teste)
+**Vantagens:** fidelidade comprovável · estudo num lugar só · custo medido de ~US$ 1,50 por edital real
+**Limitações:** Managed Agents em beta · dois editais reais e duas bancas · tabelas e OCR exigem conferência · heurísticas · quem religar o JavaScript do Dataview volta a depender de M1–M3
 
 **Próximos passos:** incidência real por tópico · avaliação automática da ficha (*evals*) · checagem semanal de retificações
 

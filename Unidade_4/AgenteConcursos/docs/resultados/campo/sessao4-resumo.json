@@ -1,0 +1,82 @@
+{
+  "agent": {
+    "description": "Edital em PDF -> ficha com citações, verticalizado integral validado, prioridade, ciclo, anotações, questões e revisão no Obsidian.",
+    "execution_identity": {
+      "type": "service_account"
+    },
+    "id": "agent_011fo9cfGSnpr8aAGGQouAEN",
+    "mcp_servers": [],
+    "model": {
+      "effort": {
+        "type": "high"
+      },
+      "id": "claude-sonnet-5-5",
+      "speed": "standard"
+    },
+    "multiagent": null,
+    "name": "Agente de Concursos",
+    "skills": [
+      {
+        "skill_id": "skill_01BC1APou3piHmwBALWcYtkA",
+        "type": "custom",
+        "version": "1795459248833620"
+      }
+    ],
+    "system": "[omitido: idêntico a agente/system-prompt.md]",
+    "tools": [
+      {
+        "configs": [],
+        "default_config": {
+          "enabled": true,
+          "permission_policy": {
+            "type": "always_allow"
+          }
+        },
+        "type": "agent_toolset_20260401"
+      }
+    ],
+    "type": "agent",
+    "version": 2
+  },
+  "archived_at": null,
+  "budget": {
+    "max_list_cost": {
+      "amount": "400",
+      "currency": "USD"
+    },
+    "type": "limit"
+  },
+  "created_at": "2026-11-23T18:40:52.057678Z",
+  "environment_id": "env_01CFzSSbz57p5YXKohqsgCFy",
+  "id": "sesn_01BD7ESLbVLH7pXUG7HKn7DK",
+  "metadata": {},
+  "outcome_evaluations": [],
+  "resources": [],
+  "stats": {
+    "active_seconds": 377.1809999999999,
+    "duration_seconds": 2484.368951331
+  },
+  "status": "idle",
+  "title": "Validação A1 - edital real SEDES-DF 2026",
+  "type": "session",
+  "updated_at": "2026-11-23T19:19:59.699565Z",
+  "usage": {
+    "active_seconds": 389.334,
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 188485
+    },
+    "cache_read_input_tokens": 4194158,
+    "input_tokens": 80,
+    "list_cost": {
+      "amount": "147",
+      "currency": "USD"
+    },
+    "output_tokens": 54829,
+    "server_tool_use": {
+      "web_fetch_requests": 0,
+      "web_search_requests": 2
+    }
+  },
+  "vault_ids": []
+}

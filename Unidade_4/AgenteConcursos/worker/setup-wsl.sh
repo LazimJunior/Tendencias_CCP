@@ -102,8 +102,18 @@ if ! findmnt -no OPTIONS /workspace/vault/.obsidian 2>/dev/null | tr ',' '\n' | 
   echo "AVISO: /workspace/vault/.obsidian nao esta somente leitura. Abra o vault no Obsidian uma vez e rode 'wsl --shutdown'."
 fi
 sudo -k 2>/dev/null || true   # descarta a senha do sudo em cache: o agente herda este terminal
+# Um worker por vez. Dois workers no mesmo /workspace se atrapalham: quando um libera a sessao dele,
+# apaga /workspace/skills, e a sessao do outro perde a skill no meio (defeito D11 da validacao em campo).
+# O descritor 9 fica aberto no 'ant' (exec), entao a trava dura enquanto o worker rodar.
+exec 9>"$HOME/.concurso-worker.lock"
+if ! flock -n 9; then
+  echo "ERRO: ja existe um worker rodando em outra janela. Use so uma: as sessoes entram na fila e rodam uma depois da outra."
+  exit 1
+fi
 echo "Worker ativo. Deixe esta janela aberta enquanto usa o agente. Ctrl+C encerra."
-exec ant beta:worker poll --workdir /workspace --max-idle 30m
+# --max-idle: quanto tempo o worker espera numa sessao ociosa antes de pegar a proxima da fila.
+# 30m (valor antigo) prendia a fila por meia hora a cada sessao concluida.
+exec ant beta:worker poll --workdir /workspace --max-idle 2m
 EOF
 chmod +x "$HOME/iniciar-worker.sh"
 

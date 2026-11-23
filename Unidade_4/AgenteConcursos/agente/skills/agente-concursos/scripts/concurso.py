@@ -23,9 +23,14 @@ SEP = r"(?:\s|<<<PAG \d+>>>)+"
 STRONG = re.compile(r"CONTE[ÚU]DOS?\s+PROGRAM[ÁA]TICOS?|OBJETOS\s+DE\s+AVALIA[ÇC](?:[ÃA]O|[ÕO]ES)"
                     r"|PROGRAMAS?\s+D[AEO]S?\s+PROVAS?", re.I)
 ANEXO_RE = re.compile(r"^(ANEXO\s+[IVXLC\d]+)\b")
-NUM_LINE = re.compile(r"^(\d{1,3}(?:\.\d{1,3})*)\.?\s+(\S.*)$")
+# "1.3 Texto", "1.3. Texto" e, vindo de OCR, "1.3.Texto" (ponto colado na letra maiuscula)
+NUM_LINE = re.compile(rf"^(\d{{1,3}}(?:\.\d{{1,3}})*)(?:\.?\s+|\.(?=[\"“(]?[{UP}]))(\S.*)$")
 TOP_RE = re.compile(rf"(?<![\w.,/º°-])(\d{{1,2}}(?:\.\d{{1,2}}){{0,4}})\.?(?=\s+[\"“'(]?[{UP}])")
 COLON_HDR = re.compile(rf"(?:^|(?<=[.;] ))([{UP}][{UP}0-9 ,\-–—/()ºª'’&]*[{UP})0-9])\s*:", re.M)
+# Cabecalho com numero de secao (3 ou mais niveis) no inicio da linha e o conteudo logo depois dos dois-pontos,
+# como "20.2.4.2.5 ESPECIALISTA ... (CARGO 404): 1 Teoria..." num edital real (SEDES/DF 2026).
+# O cabecalho vai ate os dois-pontos seguidos do primeiro topico numerado ("...ESPECIALIDADE: ECONOMIA (CARGO 404): 1").
+COLON_HDR_NUM = re.compile(rf"^(\d{{1,2}}(?:\.\d{{1,2}}){{2,5}}\s+[{UP}][^\n]*?)\s*:(?=\s+\d)", re.M)
 ABREV = {"art", "arts", "n", "nº", "no", "inc", "cap", "p", "pág", "pag", "fls", "al", "item", "itens",
          "ex", "v", "vol", "ed", "res", "port", "dec", "par", "sec"}
 CONECTOR = {"DE", "DA", "DO", "DAS", "DOS", "E", "EM", "PARA", "A", "O", "–", "-", "—", "COM", "NA", "NO"}
@@ -37,7 +42,8 @@ INJECAO = [
     (r"\b(system\s?prompt|prompt\s+do\s+sistema|instru[cç](ao|ão|oes|ões)\s+do\s+sistema)\b", "mencao a prompt de sistema"),
     (r"\bvoc[eê]\s+(agora\s+)?(é|e|deve\s+agir\s+como|passa\s+a\s+ser)\s+(um|uma|o|a)\s+(assistente|agente|modelo|ia)\b", "tentativa de troca de papel"),
     (r"</?\s*(system|instructions?|assistant|user)\s*>", "delimitador falso de conversa"),
-    (r"(rm\s+-rf|curl\s+-[a-zA-Z]|wget\s+https?://|powershell|bash\s+-c)", "comando de terminal embutido"),
+    # "powershell" sozinho aparece em conteudo programatico de TI (falso positivo num edital real); so conta com parametro
+    (r"(rm\s+-rf|curl\s+-[a-zA-Z]|wget\s+https?://|powershell(?:\.exe)?\s+-[a-zA-Z]|bash\s+-c)", "comando de terminal embutido"),
     (r"\b(envie|mande|publique|exfiltre|copie|transfira)\b.{0,60}\b(chave|token|senha|credencia|api[\s_-]?key|arquivos?\s+do)", "pedido de exfiltracao"),
     (r"(dataviewjs|\.obsidian\b|`\$=|<\s*script|plugins?/[\w.-]+/main\.js)", "pedido de codigo executavel no Obsidian"),
 ]
@@ -153,8 +159,8 @@ def cmd_extrair(a):
                 pass
     n = len(paginas)
 
-    def key(l):
-        return re.sub(r"\d+", "#", l.strip())
+    def key(l):  # numeros viram "#"; pontuacao e espacos somem, porque o OCR os insere ao acaso
+        return re.sub(r"[^\w#]", "", re.sub(r"\d+", "#", l.strip())).lower()
 
     def edges(lines):
         nb = [j for j, l in enumerate(lines) if l.strip()]
@@ -220,10 +226,46 @@ def cmd_retificar(a):
     sys.exit(1 if falhas else 0)
 
 # --------------------------------------------------------------- segmentar
+def melhor_sequencia(cands, janela=600):
+    """Índices da maior cadeia de numeração plausível (programação dinâmica).
+
+    O método guloso aceitava o primeiro número plausível e ficava preso nele: num edital real
+    (DATAPREV 2026), a tabela de vagas numera os perfis de 4. a 13. logo depois do item 3.1, e o
+    "4. DAS INSCRIÇÕES" verdadeiro era recusado, juntando 20 páginas num item só. A maior cadeia
+    prefere a sequência 4, 4.1, ..., 5, 5.1, ... e ignora os números soltos da tabela."""
+    n = len(cands)
+    best, back = [0] * n, [-1] * n
+    for i, c in enumerate(cands):
+        if plausible(None, c):
+            best[i] = 1
+        for j in range(max(0, i - janela), i):  # ">=": no empate, o pai é o candidato mais próximo
+            if best[j] and best[j] + 1 >= best[i] and plausible(cands[j], c):
+                best[i], back[i] = best[j] + 1, j
+    if not any(best):
+        return set()
+    fim = max(range(n), key=lambda i: (best[i], i))
+    sel = set()
+    while fim != -1:
+        sel.add(fim)
+        fim = back[fim]
+    return sel
+
 def segment_body(lines):
     itens = [{"id": "PREAMBULO", "linhas": [], "pagina": lines[0][1] if lines else 1}]
-    prev, in_anexo = None, False
-    for s, pg in lines:
+    cands, pos = [], []
+    for k, (s, pg) in enumerate(lines):  # candidatos a item numerado, antes do primeiro ANEXO
+        if not s:
+            continue
+        ma = ANEXO_RE.match(s)
+        if ma and upper_ratio(s) >= 0.7:
+            break
+        m = NUM_LINE.match(s)
+        if m and re.match(rf"[\"“(]?[{UP}]", m.group(2)):
+            cands.append(tuple(int(x) for x in m.group(1).split(".")))
+            pos.append(k)
+    aceitos = {pos[i] for i in melhor_sequencia(cands)}
+    in_anexo = False
+    for k, (s, pg) in enumerate(lines):
         if not s:
             continue
         ma = ANEXO_RE.match(s)
@@ -231,14 +273,10 @@ def segment_body(lines):
             itens.append({"id": re.sub(r"\s+", " ", ma.group(1)), "linhas": [s], "pagina": pg})
             in_anexo = True
             continue
-        if not in_anexo:
+        if not in_anexo and k in aceitos:
             m = NUM_LINE.match(s)
-            if m and re.match(rf"[\"“(]?[{UP}]", m.group(2)):
-                cand = tuple(int(x) for x in m.group(1).split("."))
-                if plausible(prev, cand):
-                    prev = cand
-                    itens.append({"id": m.group(1), "linhas": [m.group(2)], "pagina": pg})
-                    continue
+            itens.append({"id": m.group(1), "linhas": [m.group(2)], "pagina": pg})
+            continue
         itens[-1]["linhas"].append(s)
     res = []
     for it in itens:
@@ -303,11 +341,12 @@ def parse_programatico(plines):
         if line_header(s):
             ev.append([o, o + len(s), s.rstrip(":").strip(), "linha"])
     spans = [(e[0], e[1]) for e in ev]
-    for m in COLON_HDR.finditer(text):
+    for m in list(COLON_HDR_NUM.finditer(text)) + list(COLON_HDR.finditer(text)):
         h = m.group(1).strip()
         if len(letters(h)) < 6 or any(a <= m.start(1) < b for a, b in spans):
             continue
         ev.append([m.start(1), m.end(), h, "dois-pontos"])
+        spans.append((m.start(1), m.end()))
     ev.sort()
     merged = []  # junta cabecalhos de linha quebrados (ex.: '... ANALISTA DE' + 'TECNOLOGIA DA INFORMACAO')
     for e in ev:
@@ -336,6 +375,9 @@ def parse_programatico(plines):
         tops, numerado = split_topicos(content.strip())
         grupo["disciplinas"].append({"disciplina": h, "numerado": numerado, "pagina": page_at(s), "topicos": tops})
         ultimo_foi_disc = True
+    # Cabecalho sem conteudo depois dele no fim do texto (ex.: so o nome de quem assina, num edital real
+    # da SEDES/DF) ficava pendente como nome de grupo e sumia. A cobertura acusava; agora vira observacao final.
+    soltos = list(grupo_atual) if not ultimo_foi_disc else []
     ds = [d for g in v["grupos"] for d in g["disciplinas"]]
     if len(ds) >= 3 and sum(d["numerado"] for d in ds[:-1]) >= 0.7 * (len(ds) - 1) and not ds[-1]["numerado"] \
             and len(ds[-1]["topicos"]) <= 2:
@@ -344,6 +386,7 @@ def parse_programatico(plines):
         v["observacoes_finais"] = [d["disciplina"]] + [t["texto"] for t in d["topicos"]]
         if not g["disciplinas"]:
             v["grupos"].pop()
+    v["observacoes_finais"] += soltos
     return v, text
 
 def cmd_segmentar(a):
@@ -534,7 +577,74 @@ def iter_disc(v):
             nomes[t] += 1
             yield g, d, (t if nomes[t] == 1 else f"{t} ({nomes[t]})")
 
-PAINEL = r'''---
+# Painel padrao: so DQL (consultas do Dataview sem JavaScript). Com ele, o candidato pode deixar
+# 'Enable JavaScript Queries' desligado, e nenhum bloco dataviewjs escrito no vault roda no Windows (risco R2).
+PAINEL_DQL = r'''---
+tipo: painel
+concurso: "__NOME__"
+banca: "__BANCA__"
+data_prova: __DATA_PROVA__
+horas_semanais: __HORAS__
+---
+# __NOME__ — Painel
+
+> Edite `horas_semanais` acima e, em cada nota de [[#Disciplinas]], `questoes`, `peso`, `dominio` (0–5) e `incidencia` (padrão 1). Este Painel usa só consultas comuns do **Dataview**, sem JavaScript: deixe *Enable JavaScript Queries* desligado.
+
+**Dias até a prova:** `= choice(this.data_prova, choice(this.data_prova >= date(today), durationformat(this.data_prova - date(today), "d"), "prova já realizada"), "sem data no topo desta nota")`
+
+## Prioridade de estudo
+```dataview
+TABLE WITHOUT ID
+  file.link AS "Disciplina",
+  default(questoes, 0) * default(peso, 1) AS "Pontos",
+  choice(questoes_estimado, "sim", "não") AS "Estimado",
+  length(file.tasks) AS "Tópicos",
+  length(filter(file.tasks, (t) => t.completed)) + "/" + length(file.tasks) AS "Teoria feita",
+  round(default(questoes, 0) * default(peso, 1) / max(length(file.tasks), 1), 2) AS "Pts/tópico",
+  default(dominio, 0) AS "Domínio",
+  round(default(questoes, 0) * default(peso, 1) * default(incidencia, 1) * (1 - default(dominio, 0) / 5), 1) AS "Prioridade"
+WHERE tipo = "disciplina" AND file.folder = this.file.folder + "/Disciplinas"
+SORT default(questoes, 0) * default(peso, 1) * default(incidencia, 1) * (1 - default(dominio, 0) / 5) DESC
+```
+`prioridade = pontos × incidência × (1 − domínio/5)`. Divida as `horas_semanais` na proporção da prioridade.
+
+## Revisões vencidas (1 · 7 · 30 · 60 · 120 dias)
+```dataview
+TABLE WITHOUT ID
+  file.link AS "Anotação",
+  disciplina AS "Disciplina",
+  default(n_revisoes, 0) AS "Revisões feitas",
+  dateformat(prox, "dd/MM") AS "Vencida desde"
+FLATTEN default(ultima_revisao, criado) + dur(choice(default(n_revisoes, 0) = 0, 1, choice(n_revisoes = 1, 7, choice(n_revisoes = 2, 30, choice(n_revisoes = 3, 60, 120)))) + " days") AS prox
+WHERE tipo = "anotacao" AND startswith(file.folder, this.file.folder + "/Anotações") AND prox <= date(today)
+SORT prox ASC
+```
+Ao revisar: atualize `ultima_revisao` para hoje e some 1 em `n_revisoes`.
+
+## Caderno de erros
+```dataview
+TABLE WITHOUT ID
+  key AS "Disciplina",
+  length(filter(rows.tipo_erro, (t) => t = "conteudo")) AS "conteudo",
+  length(filter(rows.tipo_erro, (t) => t = "interpretacao")) AS "interpretacao",
+  length(filter(rows.tipo_erro, (t) => t = "pegadinha")) AS "pegadinha",
+  length(filter(rows.tipo_erro, (t) => t = "atencao")) AS "atencao",
+  length(filter(rows.tipo_erro, (t) => t = "tempo")) AS "tempo",
+  length(rows) AS "Total"
+WHERE tipo = "erro" AND startswith(file.folder, this.file.folder + "/Erros")
+GROUP BY default(disciplina, "?")
+```
+
+## Disciplinas
+```dataview
+LIST
+WHERE tipo = "disciplina" AND file.folder = this.file.folder + "/Disciplinas"
+SORT file.name ASC
+```
+'''
+
+# Painel antigo, com dataviewjs: mais rico, mas exige JavaScript ligado no Dataview. So com --painel js.
+PAINEL_JS = r'''---
 tipo: painel
 concurso: "__NOME__"
 banca: "__BANCA__"
@@ -672,7 +782,7 @@ def cmd_obsidian(a):
     itens = json.loads((work / "itens.json").read_text(encoding="utf-8"))
     pesos = load_pesos(work)
     pasta_vault = (a.prefixo.rstrip("/") + "/" if a.prefixo else "") + pasta
-    (base / "00 Painel.md").write_text(fill(PAINEL, nome=nome, banca=a.banca or "", horas=a.horas,
+    (base / "00 Painel.md").write_text(fill(PAINEL_JS if a.painel == "js" else PAINEL_DQL, nome=nome, banca=a.banca or "", horas=a.horas,
                                                      data_prova=a.data_prova or "", pasta=pasta_vault), encoding="utf-8")
     vert = [f"# Edital verticalizado — {nome}", "",
             "> Texto **literal** do edital, só reorganizado. Marque os tópicos nas notas de cada disciplina "
@@ -894,7 +1004,7 @@ INLINE_JS = re.compile(r"`\$=")
 
 
 def blocos_permitidos():
-    return {m.group("corpo").strip() for m in CERCA_JS.finditer(PAINEL)}
+    return {m.group("corpo").strip() for m in CERCA_JS.finditer(PAINEL_JS)}
 
 
 def cmd_auditar(a):
@@ -955,6 +1065,8 @@ def main():
     s.add_argument("--banca", default=""); s.add_argument("--data-prova", default="")
     s.add_argument("--horas", type=float, default=15); s.add_argument("--zip")
     s.add_argument("--forcar", action="store_true", help="sobrescreve a pasta existente (apaga progresso marcado)")
+    s.add_argument("--painel", choices=["dql", "js"], default="dql",
+                   help="dql (padrao): sem JavaScript; js: painel antigo, exige Enable JavaScript Queries")
     s = sp.add_parser("xlsx"); s.add_argument("-w", "--work", default="work"); s.add_argument("--saida", required=True)
     s.add_argument("--horas", type=float, default=15)
     s = sp.add_parser("anki"); s.add_argument("pasta"); s.add_argument("--saida", required=True)
