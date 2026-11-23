@@ -162,6 +162,20 @@ class CamadaExecutiva(unittest.TestCase):
         linhas = saida.read_text(encoding="utf-8").splitlines()
         self.assertEqual(linhas[-1].split("\t")[:2], ["Qual a LGPD?", "Lei 13.709/2018"])
 
+    def test_REG14_ficha_agrupa_secao_repetida_num_bloco_so(self):
+        work = self.tmp / "work-secoes"
+        shutil.copytree(self.work, work)
+        a.gravar(work, "ficha.json", {"campos": [
+            {"secao": "Identificação", "campo": "Banca", "valor": "IES", "item": "1.1"},
+            {"secao": "Cronograma", "campo": "Provas", "valor": "12/10/2026", "item": "4.3"},
+            {"secao": "Identificação", "campo": "Local", "valor": "Brasília/DF", "item": "1.3"},
+        ]})
+        r = a.rodar("obsidian", "-w", work, "--nome", "Secoes", "--saida", self.tmp / "vault-secoes")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        ficha = (self.tmp / "vault-secoes" / "Secoes" / "01 Ficha.md").read_text(encoding="utf-8")
+        self.assertEqual(ficha.count("## Identificação"), 1)
+        self.assertLess(ficha.index("| Local |"), ficha.index("## Cronograma"))
+
 
 if __name__ == "__main__":
     unittest.main()

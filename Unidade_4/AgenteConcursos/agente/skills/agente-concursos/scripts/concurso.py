@@ -721,7 +721,11 @@ def cmd_obsidian(a):
         pag = {it["id"]: it["pagina"] for it in itens}
         out, sec = [f"# Ficha — {nome}", "", "> Cada linha aponta o item do edital. Validada por `citacoes`.", ""], None
         trechos = []
-        for c in ficha.get("campos", []):
+        campos = ficha.get("campos", [])
+        ordem = {}
+        for c in campos:  # agrupa cada seção num bloco só, na ordem em que apareceu pela primeira vez
+            ordem.setdefault(c.get("secao"), len(ordem))
+        for c in sorted(campos, key=lambda c: ordem[c.get("secao")]):
             if c.get("secao") != sec:
                 sec = c.get("secao")
                 out += ["", f"## {sec}", "", "| Campo | Valor | Fonte |", "|---|---|---|"]

@@ -86,7 +86,7 @@ Claude Console (Managed Agents) + worker no WSL + vault do Obsidian.
 | Prompt injection no PDF | ✅ sinalizado, texto preservado |
 | Progresso marcado + reexportação | ✅ nenhum `[x]` perdido |
 
-**29/29 casos passando** · teste de mutação: **6/6 defeitos detectados**
+**30/30 casos passando** · teste de mutação: **6/6 defeitos detectados**
 Achado real: ligadura "ﬁ" do PDF quebrava citações corretas (corrigido)
 
 ---
@@ -94,7 +94,7 @@ Achado real: ligadura "ﬁ" do PDF quebrava citações corretas (corrigido)
 ## Conclusão
 
 **Vantagens:** fidelidade comprovável · estudo num lugar só · custo baixo (~US$ 1 por edital)
-**Limitações:** integração real ainda não validada (beta) · tabelas/OCR exigem conferência · heurísticas
+**Limitações:** validado só com edital fictício (Managed Agents em beta) · tabelas/OCR exigem conferência · heurísticas
 
 **Próximos passos:** incidência real por tópico · avaliação automática da ficha (*evals*) · checagem semanal de retificações
 

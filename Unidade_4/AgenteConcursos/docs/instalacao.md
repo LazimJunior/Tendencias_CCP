@@ -48,7 +48,7 @@ O arquivo equivalente é `agente/agent.md` (formato do `ant apply`).
 ## Etapa 4: worker no Ubuntu (WSL)
 1. No PowerShell como administrador, rode o comando abaixo e reinicie o computador:
 ```powershell
-wsl --install -d Ubuntu-24.04
+wsl --install -d Ubuntu
 ```
 2. No Ubuntu, com o `C:` ainda acessível, rode o setup:
 ```bash
@@ -60,7 +60,7 @@ nano ~/.concurso-worker.env
 4. Confira:
 ```bash
 ls /workspace/vault   # lista as notas do vault
-ls /mnt/c             # precisa dar erro: o C: inteiro ficou fora do alcance do agente
+ls /mnt/c             # precisa vir vazio (ou dar erro): o C: não está montado
 ~/iniciar-worker.sh   # deixe esta janela aberta enquanto usa o agente
 ```
 

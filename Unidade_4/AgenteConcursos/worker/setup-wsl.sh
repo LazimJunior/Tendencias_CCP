@@ -82,6 +82,6 @@ PRONTO. Proximos passos:
   2) No PowerShell do Windows: wsl --shutdown   (aplica o isolamento e a montagem)
   3) Abra o Ubuntu de novo e confira:
        ls /workspace/vault     -> deve listar as notas do seu vault
-       ls /mnt/c               -> deve dar erro (C: isolado)
+       ls /mnt/c               -> deve vir vazio (C: nao montado)
   4) Inicie o worker: ~/iniciar-worker.sh
 EOF

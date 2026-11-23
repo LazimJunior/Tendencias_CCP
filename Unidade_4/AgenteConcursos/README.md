@@ -13,12 +13,12 @@ Agente de IA construído no **Claude Console (Managed Agents)**. Ele lê o edita
 
 | Componente | Estado | Comprovação |
 |---|---|---|
-| Núcleo determinístico (`concurso.py`): extração, segmentação, cobertura, citações, retificação e exportações | ✅ Testado | 29/29 testes passando ([log](docs/resultados/testes.log)) |
+| Núcleo determinístico (`concurso.py`): extração, segmentação, cobertura, citações, retificação e exportações | ✅ Testado | 30/30 testes passando ([log](docs/resultados/testes.log)) |
 | Demonstração ponta a ponta, sem IA | ✅ Executada | [log](docs/resultados/demo.log) |
 | Teste de mutação | ✅ Executado | 6/6 defeitos detectados ([log](docs/resultados/mutacao.log)) |
-| Agente no Console (system prompt, skill, ambiente) | ⚠️ Pronto, sem sessão real | Requer chave de API. Managed Agents está em beta |
-| Worker self-hosted no WSL | ⚠️ Pronto, não validado | Falta rodar numa máquina Windows |
-| Painel do Obsidian (Dataview) | ⚠️ Parcial | JavaScript validado com Node. Renderização no app pendente |
+| Agente no Console (system prompt, skill, ambiente) | ✅ Sessão real executada | Edital fictício de ponta a ponta: cobertura 100% e 27 citações conferidas ([detalhes](docs/validacao.md#sessão-real-do-agente-23112026)) |
+| Worker self-hosted no WSL | ✅ Validado | Ubuntu 26.04: vault montado, C: fora do alcance do agente, worker conectado |
+| Painel do Obsidian (Dataview) | ✅ Validado no app | Obsidian 1.15.1 + Dataview 0.5.68, 8 verificações com capturas ([detalhes](docs/validacao.md#validação-no-obsidian-23112026)) |
 
 ---
 
@@ -58,7 +58,7 @@ AgenteConcursos/
 ├── cliente/sessao.py                ← chat pelo terminal com teto de gasto
 ├── vault-modelo/_perfil-estudos.md  ← perfil lido no início de cada sessão
 ├── demo/                            ← editais fictícios + execução sem IA
-├── tests/                           ← 29 casos + teste de mutação
+├── tests/                           ← 30 casos + teste de mutação
 ├── docs/                            ← instalação, engenharia de prompt, validação, logs
 └── apresentacao/                    ← slides (Marp) e roteiro
 ```
@@ -370,13 +370,15 @@ Comando: `python -m unittest discover -s tests -v`. Log em [docs/resultados/test
 | CEN-09 | Reexportação com progresso marcado | ✅ Nenhum `[x]` perdido |
 | CEN-10 | Mesma entrada, mesma saída | ✅ Arquivos idênticos byte a byte |
 
-Além desses dez, 19 casos cobrem as regras de cada camada (REG-01 a REG-13) e a configuração e segurança (SEG-01 a SEG-06). **29/29 passando.**
+Além desses dez, 20 casos cobrem as regras de cada camada (REG-01 a REG-14) e a configuração e segurança (SEG-01 a SEG-06). **30/30 passando.**
 
 **Teste de mutação:** cada proteção foi desligada, uma por vez, numa cópia do script. A suíte detectou **6 de 6 defeitos**. Na primeira rodada, a quebra da regra de numeração passou despercebida, o que levou à criação do caso REG-03.
 
 **Defeito real encontrado:** a primeira execução da demonstração reprovou duas citações corretas, porque o PDF usava a ligadura tipográfica "ﬁ". O problema foi corrigido e agora é coberto pelo caso REG-05.
 
-**Não executados** (dependem de conta e de máquina Windows): sessão real no Console, worker no WSL e renderização do Painel no Obsidian. Os passos para rodá-los manualmente estão em [docs/instalacao.md](docs/instalacao.md) (I1–I8).
+**Validado no Obsidian** (23/11/2026): Painel, embeds do verticalizado, marcação refletida no Painel e links da Ficha para o Edital Integral. Capturas em [docs/resultados/obsidian](docs/resultados/obsidian).
+
+**Sessão real** (23/11/2026): o agente rodou no Console com o worker no WSL, processou o edital fictício e gravou o material no vault. Cobertura 100%, citações conferidas e a pasta da demonstração intacta. A sessão revelou um defeito de formatação na Ficha, corrigido e coberto pelo REG-14. Os passos para rodá-los manualmente estão em [docs/instalacao.md](docs/instalacao.md) (I1–I8).
 
 ## 15. Vantagens e limitações
 
@@ -386,7 +388,7 @@ Além desses dez, 19 casos cobrem as regras de cada camada (REG-01 a REG-13) e a
 3. **Custo baixo e previsível:** a parte pesada roda no script, sem tokens. Pela tabela de preços (Sonnet 5.5 a US$ 2/US$ 10 por milhão de tokens, sessão a US$ 0,08 por hora ativa), a estimativa é da ordem de US$ 1 por edital, com teto por sessão.
 
 **Limitações**
-1. **Integração não validada:** Managed Agents está em beta, e a sessão real, o worker no WSL e o Painel no Obsidian ainda não foram executados.
+1. **Validação em um cenário só:** a integração rodou num notebook com um edital fictício. Managed Agents está em beta, e ainda falta testar editais reais e PDFs escaneados.
 2. **Tabelas e PDFs escaneados:** quadros de vagas e de cronograma quebram na extração, e o OCR erra caracteres. Os dois exigem conferência humana.
 3. **Heurísticas:** a detecção de injeção e o reconhecimento de cabeçalhos usam padrões. Casos atípicos podem passar ou gerar falso positivo. A cobertura garante o texto, não a hierarquia.
 

@@ -25,6 +25,7 @@ test_REG10_comparar_lista_inclusoes_exclusoes_e_alteracoes (test_02_camadas_e_re
 test_REG11_painel_dataview_tem_javascript_valido (test_02_camadas_e_regras.CamadaExecutiva.test_REG11_painel_dataview_tem_javascript_valido) ... ok
 test_REG12_notas_de_disciplina_tem_checklist_literal_e_pesos (test_02_camadas_e_regras.CamadaExecutiva.test_REG12_notas_de_disciplina_tem_checklist_literal_e_pesos) ... ok
 test_REG13_planilha_e_anki (test_02_camadas_e_regras.CamadaExecutiva.test_REG13_planilha_e_anki) ... ok
+test_REG14_ficha_agrupa_secao_repetida_num_bloco_so (test_02_camadas_e_regras.CamadaExecutiva.test_REG14_ficha_agrupa_secao_repetida_num_bloco_so) ... ok
 test_REG01_cabecalho_e_rodape_repetidos_sao_removidos (test_02_camadas_e_regras.CamadaPerceptiva.test_REG01_cabecalho_e_rodape_repetidos_sao_removidos) ... ok
 test_REG02_armadilhas_de_numeracao_nao_quebram_topicos (test_02_camadas_e_regras.CamadaPerceptiva.test_REG02_armadilhas_de_numeracao_nao_quebram_topicos) ... ok
 test_REG03_linha_quebrada_que_comeca_com_numero_nao_vira_item (test_02_camadas_e_regras.CamadaPerceptiva.test_REG03_linha_quebrada_que_comeca_com_numero_nao_vira_item) ... ok
@@ -39,6 +40,6 @@ test_SEG05_worker_isolado_no_wsl (test_03_seguranca_e_configuracao.SegurancaECon
 test_SEG06_cliente_limita_gasto_e_exportacao_nao_sai_da_pasta (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG06_cliente_limita_gasto_e_exportacao_nao_sai_da_pasta) ... ok
 
 ----------------------------------------------------------------------
-Ran 29 tests in 25.501s
+Ran 30 tests in 26.650s
 
 OK

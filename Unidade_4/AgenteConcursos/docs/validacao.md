@@ -4,7 +4,7 @@
 
 ```bash
 pip install -r requirements.txt
-python -m unittest discover -s tests -v   # 29 casos
+python -m unittest discover -s tests -v   # 30 casos
 python demo/demo.py                       # pipeline completo sobre um edital fictício
 python tests/mutacao.py                   # desliga proteções e confere se a suíte percebe
 ```
@@ -13,7 +13,7 @@ Os PDFs de teste são criados na hora por `demo/editais_ficticios.py`. Cada caso
 
 ## Resumo
 
-**29/29 casos passando** (Python 3.13, PyMuPDF, openpyxl). Log: [resultados/testes.log](resultados/testes.log).
+**30/30 casos passando** (Python 3.13, PyMuPDF, openpyxl). Log: [resultados/testes.log](resultados/testes.log).
 
 ## Cenários principais (CEN)
 
@@ -47,6 +47,7 @@ Os PDFs de teste são criados na hora por `demo/editais_ficticios.py`. Cada caso
 | REG-11 | Executiva | Os 5 blocos `dataviewjs` do Painel compilam (`node --check`) |
 | REG-12 | Executiva | Checklist literal com recuo por nível, pesos estimados marcados, link da ficha para o item |
 | REG-13 | Executiva | Planilha com 29 tópicos e fórmula de prioridade. Anki lê só a seção Flashcards |
+| REG-14 | Executiva | Ficha com a mesma seção em pontos diferentes do `ficha.json` sai com um único bloco por seção. Defeito achado na primeira sessão real do agente |
 
 ## Configuração e segurança (SEG)
 
@@ -78,11 +79,42 @@ Os PDFs de teste são criados na hora por `demo/editais_ficticios.py`. Cada caso
 
 A primeira execução de `demo/demo.py` reprovou duas citações que estavam certas. O PDF trazia "deﬁciência" e "classiﬁcados" com a **ligadura ﬁ**, que é um único caractere Unicode, e o trecho da ficha usava "fi" comum. É um artefato frequente em PDFs exportados de editores de texto. A extração passou a normalizar ligaduras e caracteres invisíveis, e o REG-05 e o teste de mutação cobrem a correção.
 
-## Pendente (exige conta ou Windows)
+## Validação no Obsidian (23/11/2026)
 
-- Sessão real do agente no Console, com a skill enviada.
-- Worker `ant beta:worker poll` no WSL e montagem do vault.
-- Painel renderizado dentro do Obsidian. O REG-11 garante só que o JavaScript compila. Durante o desenvolvimento a lógica rodou também numa simulação da API do Dataview, que não faz parte da suíte.
-- OCR de PDF escaneado com `tesseract-ocr-por`.
+Ambiente: Windows 11, Obsidian 1.15.1, Dataview 0.5.68 com *Enable JavaScript Queries* ligado. Vault gerado por `demo/demo.py` a partir do edital fictício SEFIC-DF 2026.
+
+| # | Verificação | Resultado | Evidência |
+|---|---|---|---|
+| OB-01 | Painel: tabela de prioridade com 5 disciplinas, pontos, % da nota, tópicos, teoria feita, domínio e prioridade | ✅ Banco de Dados com domínio 3 cai para 12,8; demais seguem `pontos × incidência` | [01](resultados/obsidian/01-painel-prioridade.jpg) |
+| OB-02 | Painel: revisões vencidas (1·7·30·60·120 dias) | ✅ A anotação 4.1 aparece vencida desde 22/11 (última revisão 15/11 + 7 dias) | [02](resultados/obsidian/02-painel-revisoes-erros.jpg) |
+| OB-03 | Painel: caderno de erros por tipo | ✅ Infraestrutura com 1 erro de pegadinha | [02](resultados/obsidian/02-painel-revisoes-erros.jpg) |
+| OB-04 | Painel: contagem regressiva | ✅ Exibe "Prova já realizada", correto porque a data da demo (12/10/2026) já passou. O ramo com dias restantes não foi exibido | [01](resultados/obsidian/01-painel-prioridade.jpg) |
+| OB-05 | Verticalizado: embeds das notas de disciplina com checklist literal e callout de observações do edital | ✅ | [03](resultados/obsidian/03-verticalizado-embeds.jpg) |
+| OB-06 | Marcar um tópico dentro do embed grava na nota da disciplina e atualiza o Painel | ✅ Língua Portuguesa passou de 0/10 para 1/10. A marcação foi desfeita depois | [04](resultados/obsidian/04-painel-apos-marcar-topico.jpg) |
+| OB-07 | Ficha: cada campo com link para o item do edital | ✅ Links resolvidos | [05](resultados/obsidian/05-ficha-fontes.jpg) |
+| OB-08 | Link da Ficha abre o Edital Integral no bloco exato (`^i-5-2`) | ✅ O item 5.2 abre destacado | [06](resultados/obsidian/06-link-ficha-para-integral.jpg) |
+
+## Sessão real do agente (23/11/2026)
+
+Ambiente: Ubuntu 26.04 no WSL 2, `ant` 2.12.1, agente com `claude-sonnet-5-5` e teto de US$ 3 por sessão. Entrada: o edital fictício `edital-sefic-2026.pdf` (4 páginas), colocado em `_editais/` no vault.
+
+| # | Verificação | Resultado |
+|---|---|---|
+| WS-01 | Vault montado em `/workspace/vault` | ✅ |
+| WS-02 | C: fora do alcance do agente | ✅ `/mnt/c` vazio, sem aviso do `iniciar-worker.sh` |
+| WS-03 | Worker conectado ao ambiente | ✅ `workers_polling: 1` na API |
+| AG-01 | O agente encontra a skill em `/workspace/skills/agente-concursos` | ✅ |
+| AG-02 | Cobertura | ✅ 291/291 palavras do conteúdo programático e 391/391 do corpo, sem nada faltando ou alterado |
+| AG-03 | Citações | ✅ 27 campos com citação e 15 NÃO CONSTA. A primeira rodada reprovou 6 campos, e o próprio agente corrigiu: órgão sem item numerado, mínimos com percentual calculado marcados como derivados, item 6.1 citado como conteúdo programático e leis separadas em um campo cada |
+| AG-04 | A pasta da demonstração ficou intacta | ✅ Nenhum arquivo de `SEFIC-DF 2026 - Analista TI` mudou |
+| AG-05 | Alertas sobre o edital | ✅ O agente apontou que o item 4.1 cita um quadro que não está no PDF. Conferido: o PDF fictício não tem esse quadro (0 tabelas na página 2) |
+| AG-06 | Conta dos mínimos para não ser eliminado | ✅ Conferida à mão: 30, 46 e 78 acertos sem deixar item em branco |
+
+**Defeito encontrado:** a Ficha saiu com a seção "Identificação" duas vezes. O `ficha.json` montado pelo agente repetiu a seção em dois pontos, e o script abria um bloco novo a cada troca de seção. O `concurso.py` passou a agrupar os campos por seção, na ordem da primeira aparição, e o caso REG-14 cobre a correção.
+
+## Pendente
+
+- OCR de PDF escaneado com `tesseract-ocr-por` (instalado no worker, ainda sem um PDF escaneado de teste).
+- Edital real de concurso, além do fictício.
 
 Para rodar esses itens manualmente e anotar o resultado, siga os casos I1–I8 de [instalacao.md](instalacao.md).

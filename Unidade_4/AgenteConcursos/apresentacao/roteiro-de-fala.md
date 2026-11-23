@@ -33,13 +33,13 @@
 - Vieses: regras da banca só do edital, estimativas marcadas, questões rotuladas.
 
 ## Slide 7: Testes (1 min 30 s)
-- 29 testes automatizados, todos aprovados, sem precisar de conta nem internet.
+- 30 testes automatizados, todos aprovados, sem precisar de conta nem internet.
 - Teste de mutação: desligamos cada proteção de propósito e a suíte detectou as 6. Na primeira rodada uma passou, e isso gerou um teste novo.
 - Achado real: a ligadura "ﬁ" do PDF fazia citações corretas falharem. A demonstração encontrou o problema antes de um edital real encontrar.
 - (Opcional, 30 s) Demonstração ao vivo: `python demo/demo.py`.
 
 ## Slide 8: Conclusão (40 s)
-- Vantagens e limitações, com honestidade: a integração com o Console ainda não foi validada numa sessão real.
+- Vantagens e limitações, com honestidade: a sessão real rodou com um edital fictício e achou um defeito de formatação, já corrigido. Falta testar editais reais e PDFs escaneados.
 - **Fechamento:** "IA confiável não é a que acerta sempre: é a que prova quando acertou."
 
 ---
