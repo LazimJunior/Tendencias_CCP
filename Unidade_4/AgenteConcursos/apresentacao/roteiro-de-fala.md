@@ -39,9 +39,10 @@
 
 ## Slide 8: Validação em campo (1 min 30 s)
 - Tudo rodou de verdade: agente no Console, worker no WSL do notebook, resultado no Obsidian.
-- O destaque é o edital real da DATAPREV: 64 páginas, 8 minutos, US$ 1,49. Cobertura de 100% e as 11 regras e contas que decidem a aprovação conferidas à mão contra o PDF (mínimo de 57,5 pontos, não zerar disciplina, 71% de chance de zerar alguma no chute).
-- Os editais reais quebraram o script em 5 pontos que o fictício não tinha. Cada defeito virou um teste antes de a sessão rodar.
-- **Frase-chave:** "O resumo do agente errou uma contagem; os dados conferidos pelo código, nenhuma. Por isso quem atesta é o código."
+- O destaque são os dois editais reais: DATAPREV (64 páginas, US$ 1,49) e SEDES-DF (59 páginas, US$ 1,47). Cobertura de 100% nos dois, e as regras e contas que decidem a aprovação conferidas à mão contra o PDF. Exemplos: mínimo de 57,5 pontos na DATAPREV, e na SEDES a fórmula da discursiva e a barreira de 4.776 corrigidos.
+- No PDF escaneado, o OCR errou 3 palavras e o agente apontou as 3 para conferência.
+- Os editais reais quebraram o script em 5 pontos que o fictício não tinha. Rodar dois workers ao mesmo tempo quebrou mais um. Cada defeito virou um teste.
+- **Frase-chave:** "Os resumos do agente erraram contagens e esqueceram duas de três retificações; os dados conferidos pelo código não erraram nenhuma. Por isso quem atesta é o código."
 
 ## Slide 9: Segurança do vault (1 min 30 s)
 - O teste revelou uma brecha no isolamento: uma nota com JavaScript roda no Windows (print de cima).
@@ -51,7 +52,7 @@
 - É o ponto de ética: a brecha foi medida, mitigada e documentada em vez de escondida.
 
 ## Slide 10: Conclusão (40 s)
-- Vantagens e limitações, com honestidade: um edital real de ponta a ponta, Managed Agents em beta, tabelas e OCR com conferência humana.
+- Vantagens e limitações, com honestidade: dois editais reais de duas bancas, Managed Agents em beta, tabelas e OCR com conferência humana.
 - **Fechamento:** "IA confiável não é a que acerta sempre: é a que prova quando acertou."
 
 ---
@@ -74,7 +75,7 @@ Ele é instruído a nunca apagar sem confirmação, o script não sobrescreve pr
 Volta a valer só M1 a M3: o agente recusa, a pasta de plugins é somente leitura e a auditoria aponta o código. É por isso que a instalação manda deixar a opção desligada.
 
 **Quanto custa?**
-Medido: US$ 1,49 para o edital real da DATAPREV, de 64 páginas, e US$ 0,27 para o fictício de 4 páginas. A extração pesada roda no script, sem tokens. Cada sessão tem teto de gasto.
+Medido: US$ 1,49 e US$ 1,47 para os editais reais da DATAPREV e da SEDES-DF, com cerca de 60 páginas cada, e US$ 0,27 para o fictício de 4 páginas. A extração pesada roda no script, sem tokens. Cada sessão tem teto de gasto.
 
 **Funciona com qualquer banca?**
 O formato muda entre bancas, por isso os testes cobrem editais numerados, sem numeração e com anexos. Regras específicas (penalização, alternativas) sempre vêm do edital, nunca de suposição sobre a banca.

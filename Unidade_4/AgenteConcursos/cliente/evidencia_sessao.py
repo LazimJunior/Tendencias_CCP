@@ -25,6 +25,9 @@ def texto(conteudo):
     for c in conteudo or []:
         if c.get("type") == "text":
             partes.append(c["text"])
+        elif c.get("type") == "search_result":
+            # Resultado de busca na web: so titulo e endereco. O texto e de terceiros e fica fora.
+            partes.append(f"- {c.get('title', '?')} ({c.get('source', '?')})")
         else:
             partes.append(f"[{c.get('type', '?')}]")
     return "\n".join(partes)
@@ -69,7 +72,7 @@ def main():
         resumo["agent"]["system"] = "[omitido: idêntico a agente/system-prompt.md]"
     json.dump(resumo, open(f"{base}-resumo.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
-    res = {e["tool_use_id"]: e for e in ev if e["type"] == "user.tool_result"}
+    res = {e["tool_use_id"]: e for e in ev if e["type"] in ("user.tool_result", "agent.tool_result")}
     usos = [e for e in ev if e["type"] == "agent.tool_use"]
     modelo = [e for e in ev if e["type"] == "span.model_request_end"]
     criado = hora(det["created_at"])
@@ -113,8 +116,10 @@ def main():
             out.append("Trecho novo:")
             out.append("")
             out.append(cerca(inp.get("new_string", "")))
-        else:
+        elif "file_path" in inp:
             out.append(f"Arquivo: `{inp.get('file_path')}`")
+        else:
+            out.append(cerca(json.dumps(inp, ensure_ascii=False, indent=1), "json"))
         out.append("")
         if r:
             t, cort = corta(texto(r.get("content")), completo)

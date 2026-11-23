@@ -1,0 +1,82 @@
+{
+  "agent": {
+    "description": "Edital em PDF -> ficha com citações, verticalizado integral validado, prioridade, ciclo, anotações, questões e revisão no Obsidian.",
+    "execution_identity": {
+      "type": "service_account"
+    },
+    "id": "agent_011fo9cfGSnpr8aAGGQouAEN",
+    "mcp_servers": [],
+    "model": {
+      "effort": {
+        "type": "high"
+      },
+      "id": "claude-sonnet-5-5",
+      "speed": "standard"
+    },
+    "multiagent": null,
+    "name": "Agente de Concursos",
+    "skills": [
+      {
+        "skill_id": "skill_01BC1APou3piHmwBALWcYtkA",
+        "type": "custom",
+        "version": "1795459248833620"
+      }
+    ],
+    "system": "[omitido: idêntico a agente/system-prompt.md]",
+    "tools": [
+      {
+        "configs": [],
+        "default_config": {
+          "enabled": true,
+          "permission_policy": {
+            "type": "always_allow"
+          }
+        },
+        "type": "agent_toolset_20260401"
+      }
+    ],
+    "type": "agent",
+    "version": 2
+  },
+  "archived_at": null,
+  "budget": {
+    "max_list_cost": {
+      "amount": "150",
+      "currency": "USD"
+    },
+    "type": "limit"
+  },
+  "created_at": "2026-11-23T18:40:53.735101Z",
+  "environment_id": "env_01CFzSSbz57p5YXKohqsgCFy",
+  "id": "sesn_01TDxo14Zbyd3B5sFDj8ve6m",
+  "metadata": {},
+  "outcome_evaluations": [],
+  "resources": [],
+  "stats": {
+    "active_seconds": 28.685000000000002,
+    "duration_seconds": 2486.499347481
+  },
+  "status": "idle",
+  "title": "Validação A1 - PDF escaneado (OCR)",
+  "type": "session",
+  "updated_at": "2026-11-23T19:14:20.206158Z",
+  "usage": {
+    "active_seconds": 30.623,
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 14034
+    },
+    "cache_read_input_tokens": 98843,
+    "input_tokens": 14,
+    "list_cost": {
+      "amount": "8",
+      "currency": "USD"
+    },
+    "output_tokens": 3487,
+    "server_tool_use": {
+      "web_fetch_requests": 0,
+      "web_search_requests": 0
+    }
+  },
+  "vault_ids": []
+}

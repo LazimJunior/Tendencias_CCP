@@ -97,11 +97,13 @@ Claude Console (Managed Agents) + worker no WSL + vault do Obsidian.
 | Sessão (Console + worker no WSL) | Resultado conferido | Custo |
 |---|---|---|
 | Edital fictício, 4 páginas | cobertura 100% · 27 citações · 1 min 42 s | US$&nbsp;0,27 |
-| **Edital real DATAPREV 2026, 64 páginas** | cobertura 100% (20.430 palavras) · 68 citações · **11/11 regras e contas conferidas no PDF** · 8 min | **US$&nbsp;1,49** |
+| **Edital real DATAPREV 2026, 64 páginas** | cobertura 100% · 68 citações · **11/11 regras e contas conferidas no PDF** · 8 min | **US$&nbsp;1,49** |
+| **Edital real SEDES-DF 2026, 59 páginas** | cobertura 100% · 91 citações · **12/12 conferidas**, com discursiva e barreira · 7 min | **US$&nbsp;1,47** |
+| PDF escaneado (OCR) | cobertura 100% · **3 de 3 erros de leitura apontados** | US$&nbsp;0,08 |
 | Ataque controlado | 5/5 verificações | US$&nbsp;0,08 |
 
-- **10 defeitos achados e corrigidos**, cada um virou teste. 5 vieram de editais reais: quadro de vagas numerado, assinatura descartada, falso alerta em "Powershell", cabeçalho com dois-pontos e ruído de OCR
-- O resumo em texto do agente errou contagens (69 citações em vez de 68). **Nenhum dado conferido por código errou**
+- **11 defeitos achados e corrigidos**, cada um virou teste. 5 vieram dos editais reais e do OCR, e 1 de dois workers rodando ao mesmo tempo
+- Os resumos em texto do agente erraram contagens e omitiram 2 de 3 retificações. **Nenhum dado conferido por código errou**
 
 ---
 
@@ -130,8 +132,8 @@ table { font-size: 17px; }
 
 ## Conclusão
 
-**Vantagens:** fidelidade comprovável · estudo num lugar só · custo medido de US$ 1,49 num edital real de 64 páginas
-**Limitações:** Managed Agents em beta · um edital real de ponta a ponta · tabelas e OCR exigem conferência · heurísticas · quem religar o JavaScript do Dataview volta a depender de M1–M3
+**Vantagens:** fidelidade comprovável · estudo num lugar só · custo medido de ~US$ 1,50 por edital real
+**Limitações:** Managed Agents em beta · dois editais reais e duas bancas · tabelas e OCR exigem conferência · heurísticas · quem religar o JavaScript do Dataview volta a depender de M1–M3
 
 **Próximos passos:** incidência real por tópico · avaliação automática da ficha (*evals*) · checagem semanal de retificações
 

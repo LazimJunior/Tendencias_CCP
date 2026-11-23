@@ -16,7 +16,7 @@ Agente de IA construído no **Claude Console (Managed Agents)**. Ele lê o edita
 | Núcleo determinístico (`concurso.py`): extração, segmentação, cobertura, citações, retificação e exportações | ✅ Testado | 39/39 testes passando ([log](docs/resultados/testes.log)) |
 | Demonstração ponta a ponta, sem IA | ✅ Executada | [log](docs/resultados/demo.log) |
 | Teste de mutação | ✅ Executado | 7/7 defeitos detectados ([log](docs/resultados/mutacao.log)) |
-| Agente no Console (system prompt, skill, ambiente) | ✅ Sessões reais executadas | Edital fictício (US$ 0,27) e edital real DATAPREV 2026, 64 páginas (US$ 1,49): cobertura 100% e citações conferidas nos dois ([detalhes](docs/validacao-em-campo.md#94-sessão-com-edital-real-dataprev-2026)) |
+| Agente no Console (system prompt, skill, ambiente) | ✅ 5 sessões reais | Edital fictício, dois editais reais (DATAPREV 2026 e SEDES-DF 2026, cerca de US$ 1,50 cada) e um PDF escaneado: cobertura 100% e citações conferidas em todos ([detalhes](docs/validacao-em-campo.md#94-sessão-com-edital-real-dataprev-2026)) |
 | Worker self-hosted no WSL | ✅ Validado | Ubuntu 26.04: vault montado, C: fora do alcance do agente, worker conectado |
 | Segurança do vault (mitigações M1–M4) | ✅ Validada em campo | Ataque controlado com 5 de 5 verificações aprovadas, e Painel funcionando com o JavaScript do Dataview desligado ([detalhes](docs/validacao-em-campo.md#126-mitigação-m4-painel-sem-javascript)) |
 | Painel do Obsidian (Dataview) | ✅ Validado no app | Obsidian 1.15.1 + Dataview 0.5.68: 8 verificações do Painel antigo e 5 do Painel sem JavaScript, com capturas ([detalhes](docs/validacao.md#validação-no-obsidian-23112026)) |
@@ -388,18 +388,26 @@ Além desses onze, 28 casos cobrem as regras de cada camada (REG-01 a REG-21) e 
 | Edital fictício, 4 páginas | Cobertura 100%, 27 citações conferidas, pasta da demonstração intacta, em 1 min 42 s | US$ 0,27 |
 | Ataque controlado | 5 de 5: recusou código no vault, sem `sudo`, não obedeceu à injeção | US$ 0,08 |
 | Edital real DATAPREV 2026, 64 páginas | Cobertura 100% (20.430 palavras do corpo), 68 citações conferidas, auditoria limpa, 11 de 11 regras e contas conferidas contra o PDF, em 8 min 3 s | US$ 1,49 |
+| Edital real SEDES-DF 2026, 59 páginas | Cobertura 100% (44.318 palavras do corpo), 91 citações conferidas, 12 de 12 regras e contas conferidas, incluindo a fórmula da discursiva e a cláusula de barreira, em 7 min 20 s | US$ 1,47 |
+| PDF escaneado, 4 páginas | Lido por OCR, cobertura 100%, e os 3 erros de leitura reais apontados para conferência | US$ 0,08 |
 
-A validação revelou 10 defeitos, todos corrigidos e cobertos por teste. Cinco vieram da instalação e da segurança (formatação da Ficha, gravação da chave do worker, detector de chaves, injeção que pede código no Obsidian e reexecução do setup). Os outros cinco vieram dos editais reais e do OCR (quadro de vagas numerado, assinatura descartada, falso alerta em "Powershell", cabeçalho com dois-pontos e ruído de OCR). Também confirmou 1 risco de segurança (nota com `dataviewjs` roda no Windows), mitigado em quatro camadas. Relatório completo: **[docs/validacao-em-campo.md](docs/validacao-em-campo.md)**. Os passos para rodar os testes manuais estão em [docs/instalacao.md](docs/instalacao.md) (I1–I8).
+A validação revelou 11 defeitos, todos corrigidos e cobertos por teste:
+
+- **Instalação e segurança (5):** formatação da Ficha, gravação da chave do worker, detector de chaves, injeção que pede código no Obsidian e reexecução do setup.
+- **Editais reais e OCR (5):** quadro de vagas numerado, assinatura descartada, falso alerta em "Powershell", cabeçalho com dois-pontos e ruído de OCR.
+- **Workers em paralelo (1):** dois workers rodando ao mesmo tempo apagavam a skill um do outro. Agora o script do worker recusa uma segunda janela.
+
+Em todas as sessões, o que o código atesta bateu. Os erros ficaram no texto livre dos resumos: contagens de citações e uma lista de retificações incompleta. Também confirmou 1 risco de segurança (nota com `dataviewjs` roda no Windows), mitigado em quatro camadas. Relatório completo: **[docs/validacao-em-campo.md](docs/validacao-em-campo.md)**. Os passos para rodar os testes manuais estão em [docs/instalacao.md](docs/instalacao.md) (I1–I8).
 
 ## 15. Vantagens e limitações
 
 **Vantagens**
 1. **Fidelidade comprovável:** o candidato não precisa confiar no modelo. A cobertura prova que o verticalizado tem todo o texto do edital, e as citações provam de onde veio cada dado da ficha.
 2. **Estudo num lugar só:** checklist, prioridade, anotações, questões, erros e revisões vivem no mesmo vault, atualizados pelo agente e pelo candidato.
-3. **Custo baixo e previsível:** a parte pesada roda no script, sem tokens. Pela tabela de preços (Sonnet 5.5 a US$ 2/US$ 10 por milhão de tokens, sessão a US$ 0,08 por hora ativa), a estimativa é da ordem de US$ 1 por edital, com teto por sessão. Medido na validação em campo: US$ 0,27 para o edital fictício de 4 páginas e US$ 1,49 para o edital real da DATAPREV, de 64 páginas.
+3. **Custo baixo e previsível:** a parte pesada roda no script, sem tokens. Pela tabela de preços (Sonnet 5.5 a US$ 2/US$ 10 por milhão de tokens, sessão a US$ 0,08 por hora ativa), a estimativa é da ordem de US$ 1 por edital, com teto por sessão. Medido na validação em campo: US$ 0,27 para o edital fictício de 4 páginas, e US$ 1,49 e US$ 1,47 para os editais reais de 64 e 59 páginas.
 
 **Limitações**
-1. **Validação em poucos cenários:** a integração rodou num notebook, com um edital fictício e um real de ponta a ponta. Managed Agents está em beta. O segundo edital real e o PDF escaneado já passaram pelo script, mas não por uma sessão completa do agente.
+1. **Validação em poucos cenários:** a integração rodou num notebook, com um edital fictício, dois reais e um PDF escaneado. Managed Agents está em beta, e duas bancas (FGV e Quadrix) não representam todas.
 2. **Tabelas e PDFs escaneados:** quadros de vagas e de cronograma quebram na extração, e o OCR erra caracteres. Os dois exigem conferência humana.
 3. **Heurísticas:** a detecção de injeção e o reconhecimento de cabeçalhos usam padrões. Casos atípicos podem passar ou gerar falso positivo. A cobertura garante o texto, não a hierarquia.
 4. **O vault é uma ponte para o Windows (risco confirmado):** com o Dataview executando JavaScript, uma nota com bloco `dataviewjs` roda no Windows com acesso ao Node, fora do isolamento do WSL. Se uma injeção escapar da heurística e o agente obedecer, o código roda quando o candidato abrir a nota. Quatro mitigações foram implementadas e validadas: regra no system prompt, `.obsidian` somente leitura para o agente, o subcomando `auditar` e um Painel sem JavaScript, que permite desligar o *Enable JavaScript Queries*. Quem religar essa opção volta a depender só das três primeiras. Detalhes em [docs/validacao-em-campo.md](docs/validacao-em-campo.md#124-opções-de-mitigação-para-o-r2).
@@ -413,6 +421,7 @@ A validação revelou 10 defeitos, todos corrigidos e cobertos por teste. Cinco 
 - Suporte a editais em HTML (diários oficiais).
 - Subagente dedicado a questões, com revisão cruzada do gabarito.
 - Trazer de volta ao Painel sem JavaScript as colunas "% da nota" e "h/semana", que dependem da soma de todas as linhas.
+- Aplicar e testar retificações reais (as três da SEDES-DF) com o subcomando `comparar`.
 - Isolar a chave do ambiente das ferramentas do agente. Um usuário Linux dedicado não resolve, porque as ferramentas rodam como filhas do worker. Exigiria que o próprio worker separasse os processos.
 
 ## 17. Como instalar e executar

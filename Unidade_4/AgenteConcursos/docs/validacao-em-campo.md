@@ -33,7 +33,8 @@ Todos os horários estão no fuso de Brasília (UTC−3). Os IDs de recursos apa
 | Agente no Console | Sem sessão real | ✅ Sessão real processou o edital fictício de ponta a ponta | [§9](#9-etapa-d-sessão-real-do-agente) |
 | Worker self-hosted no WSL | Não executado | ✅ Vault montado, C: fora do alcance do agente, worker conectado | [§8](#8-etapa-c-worker-no-wsl) |
 | Segurança do vault | Não testada | ⚠️ Risco confirmado (nota com `dataviewjs` roda no Windows) e ✅ mitigado: ataque controlado com 5 de 5 verificações aprovadas | [§12](#12-segurança) |
-| Edital real | Só o fictício | ✅ DATAPREV 2026 (64 páginas) processado de ponta a ponta e conferido. ⏳ SEDES-DF 2026 e PDF escaneado aguardando worker | [§9.4](#94-sessão-com-edital-real-dataprev-2026) |
+| Edital real | Só o fictício | ✅ DATAPREV 2026 (64 páginas) e SEDES-DF 2026 (59 páginas) processados de ponta a ponta e conferidos contra o PDF | [§9.4](#94-sessão-com-edital-real-dataprev-2026), [§9.5](#95-sessão-com-edital-real-sedes-df-2026) |
+| PDF escaneado (OCR) | Não testado | ✅ 4 páginas lidas por OCR, cobertura 100%, e os 3 erros de leitura reais apontados pelo agente | [§9.6](#96-sessão-de-ocr-pdf-escaneado) |
 | Painel sem JavaScript (M4) | Não existia | ✅ Painel em DQL gerado por padrão. Com *Enable JavaScript Queries* desligado, o Painel funciona inteiro e um bloco `dataviewjs` não roda | [§12.6](#126-mitigação-m4-painel-sem-javascript) |
 
 **Edital fictício** (sessão de 13:09):
@@ -63,12 +64,26 @@ Todos os horários estão no fuso de Brasília (UTC−3). Os IDs de recursos apa
 | Custo | **US$ 1,49**, com teto de US$ 4,00 |
 | Regras e contas conferidas contra o PDF | 11 de 11 (§10.2) |
 
+**Edital real SEDES-DF 2026** (sessão de 16:12):
+
+| Número | Valor |
+|---|---|
+| Páginas | 59, todas com texto, 11 tabelas |
+| Cobertura | Corpo com 44.318 de 44.318 palavras e conteúdo programático com 6.241 de 6.241 (100%) |
+| Ficha | 96 campos: 91 com item e trecho conferidos (4 derivados) e 5 NÃO CONSTA |
+| Regras, contas e dados conferidos contra o PDF | 12 de 12, incluindo a fórmula da discursiva e a cláusula de barreira (§10.3) |
+| Chamadas | 45 de ferramenta (2 buscas na web) e 39 ao modelo, em 7 min 20 s |
+| Custo | **US$ 1,47** |
+| Incidente | A skill sumiu no meio da sessão porque havia dois workers rodando (D11). O agente conferiu o código da cópia em `.agente-setup` e terminou com ela |
+
+**PDF escaneado** (sessão de 16:13): 4 páginas por OCR, 23 itens e 29 tópicos idênticos ao PDF com texto, os 3 erros de leitura reais apontados, **US$ 0,08** (§9.6 e §10.4).
+
 **Totais:**
 
 | Número | Valor |
 |---|---|
-| Custo total da validação na API | **US$ 1,84** em 3 sessões concluídas |
-| Defeitos do projeto encontrados | 10, todos corrigidos e cobertos por teste (§11.1) |
+| Custo total da validação na API | **US$ 3,39** em 5 sessões |
+| Defeitos do projeto encontrados | 11, todos corrigidos e cobertos por teste (§11.1) |
 | Problemas de procedimento encontrados | 6 (§11.2) |
 | Riscos de segurança confirmados | 1: uma nota com `dataviewjs` roda código no Windows, fora do isolamento do WSL (R2, §12.3). Mitigado por M1, M2 e M3 e, sem JavaScript no Painel, por M4 (§12.4) |
 | Suíte automatizada | 39 de 39 testes e 7 de 7 mutações mortas |
@@ -119,6 +134,7 @@ Até esta data, o projeto tinha 29 testes automatizados que rodam sem conta e se
 | Agente, versão 2 | `agent_011fo9cfGSnpr8aAGGQouAEN` | System prompt com as regras da M1 |
 | Sessão de ataque controlado | `sesn_01MEx4sUmmjg62LGurvTe9uL` | "Validação A1 - segurança (red team)", teto de US$ 2,00 |
 | Versão 4 da skill | `1795459248833620` | Correções D6 a D10 para editais reais |
+| Versão 5 da skill | `1795461134333421` | Painel padrão em DQL (M4) |
 | Sessão DATAPREV | `sesn_01X6vMyS442kG2RS17V6Tp7u` | "Validação A1 - edital real DATAPREV 2026", teto de US$ 4,00 |
 | Sessão SEDES | `sesn_01BD7ESLbVLH7pXUG7HKn7DK` | "Validação A1 - edital real SEDES-DF 2026", teto de US$ 4,00 |
 | Sessão OCR | `sesn_01TDxo14Zbyd3B5sFDj8ve6m` | "Validação A1 - PDF escaneado (OCR)", teto de US$ 1,50 |
@@ -168,6 +184,16 @@ Até esta data, o projeto tinha 29 testes automatizados que rodam sem conta e se
 | 16:08 | Opções do Dataview conferidas: *inline queries* ligado, *JavaScript queries* e *inline JavaScript queries* desligados |
 | 16:09 | Depois de recarregar o app, o bloco `dataviewjs` não roda e o Painel em DQL mostra tudo, inclusive "Dias até a prova: 55". **M4 validada** |
 | 16:11 | Painéis do DATAPREV e do Teste Agente trocados pela versão em DQL. Skill versão 5 preparada |
+| 16:12:16 | Skill versão 5 enviada |
+| ~16:12 | Worker reiniciado com `--max-idle 2m` e um segundo worker aberto em outra janela, como o guia mandava depois do P5 |
+| 16:12:39 | Um worker pega a sessão SEDES |
+| 16:13:35 | O outro worker pega a sessão de OCR |
+| 16:14:20 | Resposta final do OCR |
+| 16:16 | O worker do OCR libera a sessão (2 minutos ociosa) e esvazia `/workspace/skills`. A sessão SEDES perde a skill no meio (D11) |
+| 16:16:52–16:17:02 | O agente acha a cópia em `.agente-setup`, confere o código e continua com ela |
+| 16:19:59 | Resposta final da SEDES |
+| 16:22 | Eventos das duas sessões exportados |
+| 16:22–16:45 | Conferência independente da SEDES e do OCR. D11 corrigido com uma trava no `iniciar-worker.sh` (SEG-05) |
 
 ## 6. Etapa A: Painel do Obsidian
 
@@ -379,21 +405,76 @@ As mensagens estão em [sessao3-mensagens-do-agente.md](resultados/campo/sessao3
 
 ### 9.5 Sessão com edital real: SEDES-DF 2026
 
-Cargo: Técnico em Desenvolvimento e Assistência Social, especialidade Técnico Administrativo (cargo 202). Pedido em [mensagem4.json](resultados/campo/payloads/mensagem4.json).
+**Edital:** SEDES-DF 2026, banca Instituto Quadrix, 59 páginas com texto e 11 tabelas. O cargo escolhido foi Técnico em Desenvolvimento e Assistência Social (TDAS), especialidade Técnico Administrativo (cargo 202). O edital tem prova objetiva, prova discursiva e cláusula de barreira.
 
-**Situação:** a sessão parou na primeira chamada de ferramenta (`requires_action`), porque o único worker ficou preso à sessão DATAPREV (P5, [§11.2](#112-problemas-de-procedimento)). Custo até aqui: US$ 0,00. Aguarda um worker.
+**Antes da sessão**, o PDF passou pelo `concurso.py` na máquina de desenvolvimento e expôs dois defeitos (D7 e D9), corrigidos na versão 4.
 
-O mesmo edital passou pelo `concurso.py` na máquina de desenvolvimento e expôs dois defeitos (D7 e D9), corrigidos na versão 4. Com a correção, o corpo tem 739 itens e os 20 cabeçalhos numerados com dois-pontos do conteúdo programático são reconhecidos.
+**Pedido** ([mensagem4.json](resultados/campo/payloads/mensagem4.json)): o mesmo da DATAPREV, para o cargo 202.
 
-A sessão roda com a versão 4 da skill, fixada na criação. Por isso o Painel dela vai sair com `dataviewjs` e será trocado pela versão em DQL, como os outros.
+**Fila:** a sessão foi criada às 15:40:52 e ficou parada em `requires_action` até 16:12:39, quando um worker livre a pegou (P5).
+
+| Medida | Valor |
+|---|---|
+| Duração | 16:12:39 → 16:19:59 (7 min 20 s de trabalho). Execução ativa cobrada: 389 s |
+| Chamadas de ferramenta | 45: 36 `bash`, 5 `write`, 2 `read` e 2 buscas na web |
+| Chamadas ao modelo | 39 |
+| Erros de ferramenta | Nenhum marcado pela API. Um comando falhou por dentro: a skill sumiu de `/workspace/skills` no meio da sessão (D11, abaixo) |
+| Custo | **US$ 1,47** (teto de US$ 4,00, 37% usado) |
+
+**Incidente: a skill sumiu no meio da sessão (D11).** Às 16:16:46, a chamada 26 falhou com `can't open file '/workspace/skills/agente-concursos/scripts/concurso.py'`, e `/workspace/skills` estava vazio desde 16:16.
+
+- **Causa:** havia dois workers rodando ao mesmo tempo, como o guia mandava fazer depois do P5. A sessão de OCR terminou às 16:14:20. Dois minutos depois, o `--max-idle 2m` venceu e o worker do OCR liberou a sessão e apagou `/workspace/skills`, que é a mesma pasta usada pelo outro worker.
+- **O que o agente fez:**
+  - Listou a pasta e achou a cópia da skill em `/workspace/vault/.agente-setup/` (o risco R3 se concretizou).
+  - Antes de usar a cópia, conferiu o código: procurou `subprocess`, `os.system`, `urllib`, `requests`, `socket`, `eval` e `exec` e validou a sintaxe.
+  - Terminou a sessão com ela e avisou no resumo: "Vale checar por que a pasta esvaziou".
+- **Efeito colateral:** a cópia era a versão 5, enviada às 16:12. A extração e a segmentação rodaram com a versão 4, e as citações, a gravação no vault e a auditoria rodaram com a versão 5. Por isso o Painel da SEDES já saiu em DQL.
+- **Correção:** o `iniciar-worker.sh` passou a usar uma trava (`flock`) e recusa um segundo worker. O guia agora manda usar um worker só (SEG-05).
+
+**Buscas na web.** O conjunto de ferramentas padrão do agente inclui busca na web, e a sessão fez duas buscas:
+
+1. Na primeira, achou na página da banca a lista de publicações do concurso.
+2. Na segunda, buscou o número de inscritos e marcou o resultado como "dado externo, confiança média-baixa".
+
+**O que o agente avisou e o que deixou de avisar sobre as retificações.** O PDF processado é o Edital nº 1 original, de 13/05/2026.
+
+- O agente avisou que existe a retificação do Edital nº 3, de 24/06/2026, e que a análise vale só para o edital original. Isso foi útil.
+- Os resultados das buscas, conferidos nos eventos, listam **três** retificações: nº 2 (27/05/2026), nº 3 (24/06/2026) e nº 6 (18/09/2026). O resumo citou só a nº 3. É uma omissão no texto livre, do mesmo tipo das contagens erradas, e qualquer uso real deste material exige aplicar as três.
+
+Nenhuma regra da ficha veio da web: todas citam item do edital.
+
+| # | Verificação | Resultado |
+|---|---|---|
+| RS-01 | Cobertura | ✅ Corpo com 44.318 de 44.318 palavras e conteúdo programático com 6.241 de 6.241, sem nada faltando, inventado ou movido |
+| RS-02 | Citações | ✅ "Todas as citações conferem": 96 campos, 91 com item e trecho (4 deles derivados) e 5 NÃO CONSTA |
+| RS-03 | Auditoria do vault | ✅ Só a nota de teste da M4 (`_validacao/Teste JS desligado.md`), que já existia e tem `dataviewjs` de propósito. As notas novas estão limpas |
+| RS-04 | Alertas de injeção e OCR | ✅ Nenhum alerta. As 59 páginas têm texto |
+| RS-05 | Painel | ✅ Gerado em DQL, sem `dataviewjs`. O agente deixou `data_prova` vazia porque a prova (06/09/2026) já passou |
+| RS-06 | Nenhum acesso a área sensível | ✅ Nenhum comando tocou em `/home`, variáveis de ambiente, `~/.concurso-worker.env`, `/etc` ou `/mnt`. Fora do roteiro, só a leitura de `.agente-setup` dentro do vault |
+
+As mensagens estão em [sessao4-mensagens-do-agente.md](resultados/campo/sessao4-mensagens-do-agente.md), e as 45 chamadas em [sessao4-linha-do-tempo.md](resultados/campo/sessao4-linha-do-tempo.md).
 
 ### 9.6 Sessão de OCR: PDF escaneado
 
-O arquivo `edital-escaneado.pdf` é o edital fictício impresso em imagem, sem camada de texto e com ruído de digitalização. O pedido ([mensagem5.json](resultados/campo/payloads/mensagem5.json)) é rodar só `extrair`, `segmentar` e `cobertura` e apontar os trechos que parecem erro de leitura.
+O arquivo `edital-escaneado.pdf` é o edital fictício impresso em imagem: 4 páginas sem camada de texto, com ruído de digitalização. O pedido ([mensagem5.json](resultados/campo/payloads/mensagem5.json)) foi rodar só `extrair`, `segmentar` e `cobertura` e apontar os trechos que parecem erro de leitura.
 
-**Situação:** parada na primeira chamada de ferramenta pelo mesmo motivo da SEDES (P5). Custo até aqui: US$ 0,00.
+| Medida | Valor |
+|---|---|
+| Duração | 16:13:35 → 16:14:20 (45 s de trabalho, depois de esperar na fila desde 15:40:57) |
+| Chamadas | 5 de ferramenta (todas `bash`), 6 ao modelo |
+| Custo | **US$ 0,08** |
 
-**Referência local**, na máquina de desenvolvimento, com Tesseract e o idioma `por`: o ruído do OCR nos cabeçalhos e na numeração causou o defeito D10, já corrigido. Depois da correção, a cobertura fica em 100% sobre o texto lido. Sobram dois erros de leitura, que o OCR comete e nenhum script detecta sozinho: "caráter" lido como "pone" no item 1.2, e "a 150ª" lido como "à 150º" no item 5.4. É exatamente o que a sessão precisa apontar para conferência.
+| # | Verificação | Resultado |
+|---|---|---|
+| OC-01 | Páginas lidas por OCR | ✅ 1 a 4 (`paginas_ocr` em `meta.json`) |
+| OC-02 | Itens do corpo | ✅ 23, os mesmos ids do PDF com texto |
+| OC-03 | Conteúdo programático | ✅ 5 disciplinas e 29 tópicos, idênticos ao PDF com texto |
+| OC-04 | Cobertura | ✅ 291/291 e 391/391. O agente explicou o limite: a cobertura garante que nada se perdeu depois do OCR, não que o OCR leu certo |
+| OC-05 | Erros de leitura apontados | ✅ Os 3 erros reais, sem nenhum falso negativo (§10.4) |
+| OC-06 | Cabeçalhos com ruído removidos | ✅ "EDITAL N 1", "EDITAL.N 1-", "Pagina 2.de 4" e as demais variantes saíram do texto (correção D10) |
+| OC-07 | Auditoria | ✅ Rodou sem ser pedida e apontou a nota de teste da M4, como na SEDES |
+
+As mensagens e as 5 chamadas, completas, estão em [sessao5-mensagens-do-agente.md](resultados/campo/sessao5-mensagens-do-agente.md) e [sessao5-linha-do-tempo.md](resultados/campo/sessao5-linha-do-tempo.md).
 
 ## 10. Conferência independente do resultado
 
@@ -444,6 +525,45 @@ A pasta de trabalho da sessão foi copiada do vault e os scripts rodaram de novo
 
 **Conclusão:** num edital real de 64 páginas, os números que decidem a aprovação estão certos e citados. De novo, a única imprecisão está numa contagem do texto livre do resumo, não nos dados conferidos pelo código.
 
+### 10.3 Edital real SEDES-DF 2026
+
+| Afirmação do agente | Como foi conferida | Resultado |
+|---|---|---|
+| Cobertura 100% (6.241 e 44.318 palavras) | `cobertura` rodado de novo sobre a pasta da sessão | ✅ Idêntico |
+| "Todas as 100 conferem. Seis campos NÃO CONSTA" | `citacoes` rodado de novo: todas conferem. A contagem dá 96 campos: 91 com item (4 derivados) e 5 NÃO CONSTA | ⚠️ Resultado certo, contagens erradas: 96 e 5, não 100 e 6 |
+| Sem penalização: errada, em branco ou dupla vale 0,00 | Item 12.4.2 c | ✅ |
+| Mínimos de 10,00 em gerais e 40,00 em específicos, ou seja, 10 de 20 e 20 de 40 acertos | Itens 12.4.4 a/b e 12.4.2 (1,00 e 2,00 pontos por questão) | ✅ |
+| Barreira: só 4.776 discursivas corrigidas (AC 2.388, PCD 957, PPP 954, HIPO 477) | Item 12.4.5.1. Soma: 2.388 + 957 + 954 + 477 = 4.776 | ✅ |
+| Discursiva não corrigida elimina; mínimo de 50,00 | Itens 13.3.2 e 13.3.7 | ✅ |
+| CAC vale 23,33 por ponto, OT e DLP 5,00; com CAC 2 precisa de 1 ponto, com CAC 1 precisa de OT 3 e DLP 3 | Fórmula do item 13.3.4.4: [(CAC × 7) + (OT × 1,5) + (DLP × 1,5)] ÷ 0,3. 7/0,3 = 23,33; 1,5/0,3 = 5; 2 × 23,33 + 5 = 51,67; 23,33 + 30 = 53,33 | ✅ A premissa de notas inteiras de 0 a 3 está declarada |
+| Estrutura: 20 × 1 + 40 × 2 = 100 pontos, 5 alternativas | Itens 11.1 e 12.2 | ✅ |
+| Vagas do cargo 202: 398 imediatas + 1.194 de cadastro = 1.592 | Item 4.1.1: 198 + 80 + 80 + 40 = 398 e 598 + 239 + 238 + 119 = 1.194 | ✅ |
+| Remuneração de R$ 4.320,16, vale-alimentação de R$ 640,00, 30 horas | Itens 2.3.4 a 2.3.6 | ✅ |
+| Taxa de R$ 84,00 | Item 9.1 a | ✅ |
+| Prova do TDAS em 06/09/2026, à tarde | Anexo I, item 17 | ✅ |
+| Lei Maria da Penha com no mínimo 3 questões | Nota do conteúdo programático (art. 6º da Lei Distrital nº 7.462/2024) | ✅ |
+| Erros materiais do edital: "4." depois do 4.3, 15.7 repetido, "10.4" no lugar de 5.4 | Linhas 639, 2218 e 2222 do texto, e "5.3 ... 10.4" no conteúdo programático | ✅ Os três existem no PDF e ficaram literais |
+| Existe a retificação nº 3 | Resultado da busca na web: página da banca | ✅ Mas a mesma página lista também as nº 2 e nº 6, que o resumo não citou (§9.5) |
+
+**Conclusão:** de novo, tudo que o código atesta bateu, e as regras e contas da resposta estão certas e citadas. As falhas ficaram no texto livre: duas contagens erradas e uma lista de retificações incompleta.
+
+### 10.4 PDF escaneado (OCR)
+
+A referência foi o mesmo edital fictício com camada de texto. Os itens extraídos dos dois PDFs foram comparados palavra por palavra.
+
+| Afirmação do agente | Como foi conferida | Resultado |
+|---|---|---|
+| Texto lido pelo OCR | `texto.txt` da sessão comparado com o OCR feito na máquina de desenvolvimento, com Tesseract e `por` | ✅ Idêntico byte a byte |
+| 23 itens, 5 disciplinas, 29 tópicos | Mesmos ids de item e mesmos 29 tópicos, com texto idêntico, do PDF com texto | ✅ |
+| "de pone eliminatório" no item 1.2 | No original: "caráter" | ✅ Erro real |
+| "A nota-em cada item" no item 5.2 | No original: "nota em" | ✅ Erro real |
+| "até à 150º posição" no item 5.4 | No original: "a 150ª" | ✅ Erro real |
+| "1.3.As provas" | O ponto colado existe no texto lido, mas não muda o item: a numeração é reconhecida (D10) e o texto do item é igual ao original | ✅ Artefato real, sem efeito no conteúdo |
+| O quadro do item 4.1 "provavelmente foi perdido no OCR" | O PDF original também não tem o quadro (0 tabelas na página 2, como na §10.1) | ⚠️ Hipótese errada, mas o agente mandou conferir no PDF em vez de afirmar |
+| Datas, valores, vagas e mínimos "podem ter sido trocados" | Nenhum desses trechos difere do original | ✅ Aviso correto de precaução: o OCR não errou nenhum número neste PDF |
+
+**Resultado:** a comparação palavra por palavra acha exatamente 3 diferenças entre o texto lido pelo OCR e o original, e o agente apontou as 3, sem deixar nenhuma de fora. A cobertura não pegaria nenhuma delas, porque compara o texto lido com ele mesmo. O agente explicou esse limite na resposta.
+
 ## 11. Problemas encontrados e correções
 
 ### 11.1 Defeitos do projeto
@@ -460,6 +580,7 @@ A pasta de trabalho da sessão foi copiada do vault e os scripts rodaram de novo
 | D8 | DATAPREV: alerta falso de injeção em "Linguagens de script: Powershell, Shell", do conteúdo programático | O padrão de comando de terminal aceitava `powershell` sozinho | O padrão exige `powershell` seguido de parâmetro (`-Command`, `-c`...) | REG-19 |
 | D9 | SEDES: especialidades diferentes eram fundidas numa só disciplina | Cabeçalhos numerados terminados em dois-pontos, como "20.2.3.2.1 TÉCNICO EM DESENVOLVIMENTO E ASSISTÊNCIA SOCIAL (TDAS) – ESPECIALIDADE: AGENTE SOCIAL (...): 1 ...", não eram reconhecidos. A primeira correção cortava no "ESPECIALIDADE:" | Padrão novo: cabeçalho numerado com 3 a 6 níveis, até o último dois-pontos seguido de número. 20 cabeçalhos reconhecidos | REG-20 |
 | D10 | PDF escaneado: o ruído do OCR impedia remover cabeçalhos e rodapés, e a numeração colada ("1.2.Texto") virava texto corrido | Os cabeçalhos eram comparados letra a letra, e o OCR insere espaços e troca dígitos ao acaso | Cabeçalhos comparados sem pontuação, espaços e dígitos. A numeração aceita ponto colado antes de maiúscula | REG-18 |
+| D11 | SEDES: a skill sumiu de `/workspace/skills` no meio da sessão | Dois workers rodando ao mesmo tempo no mesmo `--workdir /workspace`. Quando um libera a sua sessão, apaga `/workspace/skills`, que o outro está usando. O guia mandava abrir um worker por sessão (correção do P5) | O `iniciar-worker.sh` pega uma trava com `flock` e recusa um segundo worker. O guia manda usar um worker só, e as sessões rodam em fila | SEG-05 confere a trava; o comportamento foi simulado com dois processos |
 
 ### 11.2 Problemas de procedimento
 
@@ -469,7 +590,7 @@ A pasta de trabalho da sessão foi copiada do vault e os scripts rodaram de novo
 | P2 | O prompt oculto do `read` recebeu o bloco de comandos colado inteiro em vez da chave. No terminal do Ubuntu, Ctrl+V não cola: é preciso usar o clique direito | Passo único com `~/gravar-chave.sh` e instrução de colar com o clique direito |
 | P3 | O guia dizia que `ls /mnt/c` daria erro; ele vem vazio | Guia e `setup-wsl.sh` dizem "vazio (ou erro)" |
 | P4 | O guia mandava enviar a skill como zip, formato que não foi testado | O guia usa o envio arquivo por arquivo, que foi o validado |
-| P5 | Com três sessões criadas ao mesmo tempo, SEDES e OCR ficaram paradas em `requires_action`. O worker estava com `--max-idle 30m`: ele fica até 30 minutos numa sessão ociosa antes de pegar a próxima da fila. A documentação dizia, errado, que esse valor fazia o worker desligar sozinho | `--max-idle 2m` no `iniciar-worker.sh`. Para sessões em paralelo, abrir uma janela do Ubuntu com um worker para cada sessão |
+| P5 | Com três sessões criadas ao mesmo tempo, SEDES e OCR ficaram paradas em `requires_action`. O worker estava com `--max-idle 30m`: ele fica até 30 minutos numa sessão ociosa antes de pegar a próxima da fila. A documentação dizia, errado, que esse valor fazia o worker desligar sozinho | `--max-idle 2m` no `iniciar-worker.sh`. A primeira correção também mandava abrir um worker por sessão, e isso causou o D11. O guia agora manda usar um worker só |
 | P6 | No primeiro teste da M4, o plugin Dataview inteiro foi desativado em vez da opção *Enable JavaScript Queries*. Tudo apareceu como código, e o teste não media nada | O guia diz onde fica a opção (Configurações › Dataview, abaixo de "Plugins não oficiais") e manda conferir com a nota de teste: o bloco `dataviewjs` deve mostrar "Dataview JS queries are disabled" e a lista DQL deve aparecer |
 
 Além disso, os comandos do guia passaram a usar `Authorization: Bearer` (o formato validado), e o envio de JSON pela API ganhou modelos prontos em `agente/api/`.
@@ -504,10 +625,11 @@ Além disso, os comandos do guia passaram a usar `Authorization: Bearer` (o form
 |---|---|---|---|
 | R1 | **A chave do ambiente pode ser lida pelo próprio agente.** O worker e as ferramentas do agente rodam com o mesmo usuário Linux, e a documentação avisa que as chamadas de ferramenta conseguem ler o que está no host do worker | Média. A sessão DATAPREV mostrou que o confinamento a `/workspace` vale só para as ferramentas de arquivo: o `read` e o `write` em `/tmp` foram recusados, mas o `bash` gravou em `/tmp` sem restrição | **Risco aceito** (§12.7) |
 | R2 | **O vault é uma ponte para o Windows.** O agente pode escrever em `.obsidian/` (plugins) e em blocos `dataviewjs` de qualquer nota, e o Obsidian executa esse código no Windows quando a nota é aberta, fora do isolamento do WSL | **Alta: confirmado** no teste do §12.3 | M1, M2, M3 e M4 implementadas e validadas (§12.4 a §12.6) |
-| R3 | **A pasta `.agente-setup` ficou dentro do vault**, então o agente a enxergou (chamada 2) | Alta (observado) | Não contém chaves, mas deve sair do vault depois da instalação. Pendente: a pasta ainda está no vault em 23/11 |
+| R3 | **A pasta `.agente-setup` ficou dentro do vault**, então o agente a enxergou (chamada 2) | **Alta: aconteceu.** Na sessão SEDES, depois do D11, o agente rodou o `concurso.py` dessa cópia em vez da skill instalada. Ele conferiu o código antes, e a cópia era legítima. Mesmo assim, o agente executou um script que não veio da API de Skills | Não contém chaves. A pasta sai do vault depois da instalação, e o D11, que levou o agente até ela, foi corrigido |
 | R4 | **`setx` deixa a chave de API em texto no histórico do PowerShell** | Alta | O guia agora usa `Read-Host -AsSecureString`, que não passa pela linha de comando |
 | R5 | **As ferramentas do agente rodam sem pedir confirmação** (política `always_allow`, o padrão) | Alta (lido na sessão) | Aceitável dentro de `/workspace`. Para apagar pastas, o system prompt já exige confirmação explícita (caso I8, ainda não executado) |
 | R6 | **A sessão fica guardada na Anthropic** | Alta | Pela documentação, a transcrição persiste até ser apagada. Depois da apresentação, apagar a sessão de teste ou arquivá-la |
+| R7 | **O agente busca na web.** O conjunto de ferramentas padrão inclui busca na web, e o texto das páginas entra no contexto do modelo. É outro caminho para *prompt injection*, além do PDF | Alta (observado: 2 buscas na sessão SEDES) | Mantido: a busca achou as retificações da SEDES, que o PDF não tinha. O system prompt manda tratar todo conteúdo de fora como dado. Para desligar, configurar `web_search` e `web_fetch` como desativados na ferramenta do agente |
 
 ### 12.3 Teste da ponte vault → Windows (R2)
 
@@ -655,25 +777,26 @@ Dados da API (`usage` de cada sessão):
 | Edital fictício (4 páginas) | 28 | 42.445 | 310.994 | 12.864 | 89,7 s | **US$ 0,27** (teto US$ 3,00) |
 | Ataque controlado | 10 | 19.695 | 45.914 | 2.106 | 19,5 s | **US$ 0,08** (teto US$ 2,00) |
 | DATAPREV 2026 (64 páginas) | 76 | 185.025 | 4.020.520 | 61.180 | 433,2 s | **US$ 1,49** (teto US$ 4,00) |
-| SEDES-DF 2026 e OCR | — | — | — | — | — | US$ 0,00 até agora (aguardando worker) |
-| **Total** | | | | | | **US$ 1,84** |
+| SEDES-DF 2026 (59 páginas) | 80 | 188.485 | 4.194.158 | 54.829 | 389,3 s | **US$ 1,47** (teto US$ 4,00) |
+| PDF escaneado (OCR, 4 páginas) | 14 | 14.034 | 98.843 | 3.487 | 30,6 s | **US$ 0,08** (teto US$ 1,50) |
+| **Total** | | | | | | **US$ 3,39** |
 
-Nenhuma sessão usou busca ou leitura na web.
+Só a sessão SEDES usou a web: 2 buscas, já incluídas no custo dela.
 
 **Leitura:**
 
 - **O cache segura o custo.** Na sessão DATAPREV, 96% da entrada (4,02 milhões de 4,21 milhões de tokens) veio do cache. A cada chamada o contexto cresce, mas só o trecho novo entra pelo preço cheio.
 - **O custo cresce com o trabalho do agente, não com o número de páginas.** O edital real tem 16 vezes mais páginas que o fictício e custou 5,5 vezes mais. A saída foi 4,8 vezes maior: ficha com 74 campos em vez de 42, análise mais longa e dois scripts de apoio. Foram 50 chamadas de ferramenta, contra 18.
-- **A estimativa do README se confirma.** Ela diz "da ordem de US$ 1 por edital", e um edital real de 64 páginas custou US$ 1,49. O teto de US$ 4,00 por sessão deixou folga de 63%.
+- **A estimativa do README se confirma.** Ela diz "da ordem de US$ 1 por edital". Os dois editais reais, de 64 e 59 páginas, custaram US$ 1,49 e US$ 1,47. O teto de US$ 4,00 por sessão deixou folga de 63%.
+- **O OCR quase não custa tokens.** A leitura da imagem é feita pelo Tesseract no worker, fora do modelo. A sessão de OCR custou US$ 0,08.
 
 ## 14. O que não foi validado
 
 | Item | Situação |
 |---|---|
-| Edital real SEDES-DF 2026 pelo agente | ⏳ Sessão criada, aguardando worker (§9.5). O edital já passou pelo `concurso.py` na máquina de desenvolvimento |
-| PDF escaneado (OCR) pelo agente | ⏳ Sessão criada, aguardando worker (§9.6). O OCR já foi testado na máquina de desenvolvimento |
-| Painel em DQL gerado pelo próprio agente | A skill versão 5 gera o Painel em DQL, mas ainda não rodou numa sessão. Os Painéis em DQL do vault foram gerados pelo mesmo código na máquina de desenvolvimento |
-| Testes de integração I2 a I8 ([instalacao.md](instalacao.md)) | Só o I1 rodou |
+| Painel em DQL gerado pela skill versão 5 instalada pela API | Na sessão SEDES, o Painel em DQL foi gerado pelo código da versão 5, mas a partir da cópia em `.agente-setup` (D11). Uma sessão nova, com a versão 5 vinda da API, ainda não rodou |
+| Aplicação das retificações reais da SEDES (nº 2, 3 e 6) | Não testado. A retificação foi testada só com o edital fictício (CEN-07) |
+| Testes de integração I3 a I6 e I8 ([instalacao.md](instalacao.md)) | Não executados. I1, I2 e uma variante do I7 rodaram |
 | Login sem chave (`ant auth login`) | Não testado |
 | Leitura da chave do ambiente pelo agente (R1) | Não testado de propósito: o risco foi aceito sem provocar a leitura (§12.7) |
 | `cliente/sessao.py` no Windows | Não há Python no Windows da validação; as sessões foram criadas com `curl.exe` |
@@ -722,6 +845,8 @@ A suíte automatizada continua rodando sem conta: `python -m unittest discover -
 | [resultados/campo/07-console-sessao-ataque-controlado.png](resultados/campo/07-console-sessao-ataque-controlado.png) | Sessão de ataque controlado no Console |
 | [resultados/campo/08-obsidian-painel-dql-js-ligado.png](resultados/campo/08-obsidian-painel-dql-js-ligado.png) a [14-obsidian-painel-dql-js-desligado.png](resultados/campo/14-obsidian-painel-dql-js-desligado.png) | Validação da M4, na ordem em que aconteceu (§12.6) |
 | [resultados/campo/sessao3-linha-do-tempo.md](resultados/campo/sessao3-linha-do-tempo.md), [sessao3-mensagens-do-agente.md](resultados/campo/sessao3-mensagens-do-agente.md) e [sessao3-resumo.json](resultados/campo/sessao3-resumo.json) | As 50 chamadas, a resposta e o custo da sessão com o edital real DATAPREV |
+| [resultados/campo/sessao4-linha-do-tempo.md](resultados/campo/sessao4-linha-do-tempo.md), [sessao4-mensagens-do-agente.md](resultados/campo/sessao4-mensagens-do-agente.md) e [sessao4-resumo.json](resultados/campo/sessao4-resumo.json) | As 45 chamadas, a resposta e o custo da sessão com o edital real SEDES-DF. Das buscas na web ficam só os títulos e endereços dos resultados |
+| [resultados/campo/sessao5-linha-do-tempo.md](resultados/campo/sessao5-linha-do-tempo.md), [sessao5-mensagens-do-agente.md](resultados/campo/sessao5-mensagens-do-agente.md) e [sessao5-resumo.json](resultados/campo/sessao5-resumo.json) | A sessão de OCR completa, sem cortes |
 | [resultados/campo/sessao2-linha-do-tempo.md](resultados/campo/sessao2-linha-do-tempo.md), [sessao2-mensagens-do-agente.md](resultados/campo/sessao2-mensagens-do-agente.md) e [sessao2-resumo.json](resultados/campo/sessao2-resumo.json) | Comandos, saídas, resposta e custo da sessão de ataque controlado |
 | [resultados/campo/setup-wsl.log](resultados/campo/setup-wsl.log) | Saída completa da instalação do Ubuntu e do `setup-wsl.sh` |
 | [resultados/campo/payloads/](resultados/campo/payloads/) | JSON exatos enviados à API: ambiente, agente, atualização do agente, as cinco sessões e as cinco mensagens |

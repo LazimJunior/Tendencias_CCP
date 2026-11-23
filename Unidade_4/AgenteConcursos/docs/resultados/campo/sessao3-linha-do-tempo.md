@@ -2,7 +2,7 @@
 
 Sessão `sesn_01X6vMyS442kG2RS17V6Tp7u`, criada em 23/11/2026 às 15:40:50 (horário de Brasília). A API devolveu 468 eventos: 50 chamadas de ferramenta e 37 chamadas ao modelo. Agente na versão 2, skill na versão `1795459248833620`.
 
-Cada comando aparece inteiro. As saídas mostram até 40 linhas ou 3000 caracteres; quando há corte, ele vem marcado. O texto integral está nos eventos exportados pela API, que não foram versionados por tamanho (530 KB).
+Cada comando aparece inteiro. As saídas mostram até 40 linhas ou 3000 caracteres; quando há corte, ele vem marcado. O texto integral está nos eventos exportados pela API, que não foram versionados por tamanho.
 
 ## 1. 15:40:53 · `bash` · erro: não
 

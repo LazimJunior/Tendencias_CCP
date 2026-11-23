@@ -83,7 +83,7 @@ ls /mnt/c             # precisa vir vazio (ou dar erro): o C: não está montado
 touch /workspace/vault/.obsidian/teste-escrita   # precisa dar "Read-only file system"
 ~/iniciar-worker.sh   # deixe esta janela aberta enquanto usa o agente; não pode aparecer AVISO
 ```
-Cada worker atende uma sessão por vez. Depois que a sessão fica ociosa, ele espera 2 minutos (`--max-idle 2m`) e passa para a próxima da fila. Para rodar várias sessões ao mesmo tempo, abra uma janela do Ubuntu com `~/iniciar-worker.sh` para cada uma. O worker não desliga sozinho: Ctrl+C encerra.
+Use **um worker só**. Ele atende uma sessão por vez: depois que a sessão fica ociosa, espera 2 minutos (`--max-idle 2m`) e passa para a próxima da fila. Não abra um segundo worker para rodar sessões em paralelo: os dois usam o mesmo `/workspace`, e quando um libera a sua sessão apaga a skill da sessão do outro. O `iniciar-worker.sh` recusa a segunda janela. O worker não desliga sozinho: Ctrl+C encerra.
 O `setup-wsl.sh` pode ser rodado de novo a qualquer momento (por exemplo, depois de atualizar o projeto): ele não apaga a chave gravada e, com o vault já montado, o caminho é `/workspace/vault/...`.
 7. No PowerShell, confira se o worker se conectou. Precisa aparecer `"workers_polling":1`:
 ```powershell
@@ -144,7 +144,9 @@ python cliente\sessao.py --orcamento 3
 | Sintoma | Causa provável |
 |---|---|
 | A sessão não responde | Worker parado. Rode `~/iniciar-worker.sh` no Ubuntu |
-| A sessão fica em `requires_action` logo na primeira ferramenta | Nenhum worker livre: o único está preso a outra sessão. Abra outra janela do Ubuntu com `~/iniciar-worker.sh`, ou espere o `--max-idle` da sessão anterior |
+| A sessão fica em `requires_action` logo na primeira ferramenta | O worker está ocupado com outra sessão. Ela começa sozinha 2 minutos depois que a anterior terminar (`--max-idle 2m`) |
+| `iniciar-worker.sh` responde "ja existe um worker rodando em outra janela" | Já há um worker ativo. Use aquela janela: as sessões rodam uma depois da outra |
+| O agente diz que `/workspace/skills/agente-concursos` sumiu no meio da sessão | Havia dois workers rodando ao mesmo tempo. Feche um e peça ao agente para refazer o passo |
 | `wsl --install -d Ubuntu-24.04` dá "Nome de distribuição inválido" | O nome mudou. Use `wsl --install -d Ubuntu` ou veja a lista com `wsl --list --online` |
 | `gravar-chave.sh` responde "isso nao e a chave" | O que foi colado não era a chave (por exemplo, o próprio comando). Copie só a chave no Console e cole com o clique direito |
 | `AVISO: /workspace/vault/.obsidian nao esta somente leitura` | A pasta `.obsidian` não existia quando o WSL montou o vault. Abra o vault no Obsidian uma vez e rode `wsl --shutdown` |

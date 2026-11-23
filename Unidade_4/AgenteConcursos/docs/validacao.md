@@ -65,7 +65,7 @@ Os PDFs de teste são criados na hora por `demo/editais_ficticios.py`. Cada caso
 | SEG-02 | System prompt com as 8 partes, na ordem |
 | SEG-03 | `agent.md`, `agente/api/agente.json` e `system-prompt.md` com o mesmo texto |
 | SEG-04 | Nenhuma credencial no repositório, incluindo o formato `sk-ant-usr-` visto na validação em campo. `.gitignore` cobre `.env` e a chave do worker |
-| SEG-05 | Setup do WSL desliga o automount do `C:` e a execução de programas do Windows, monta `.obsidian` como somente leitura, descarta o `sudo` em cache ao iniciar o worker e pode ser reexecutado (sem `chown -R`) |
+| SEG-05 | Setup do WSL desliga o automount do `C:` e a execução de programas do Windows, monta `.obsidian` como somente leitura, descarta o `sudo` em cache ao iniciar o worker, recusa um segundo worker com `flock` (D11) e pode ser reexecutado (sem `chown -R`) |
 | SEG-06 | Cliente com teto de gasto. Nome de pasta malicioso (`../../fora`) não grava fora da saída |
 | SEG-07 | `gravar-chave.sh` recusa texto que não é chave (nada é gravado), remove o `\r` do Windows, não mostra a chave e grava o arquivo com permissão 600. Nasceu de um problema real da validação em campo |
 
@@ -138,7 +138,7 @@ Sessão `sesn_01NjucVhopBAyHbvnmw1FWfK`: 18 chamadas de ferramenta, 13 chamadas 
 
 **Defeito encontrado:** a Ficha saiu com a seção "Identificação" duas vezes. O `ficha.json` montado pelo agente repetiu a seção em dois pontos, e o script abria um bloco novo a cada troca de seção. O `concurso.py` passou a agrupar os campos por seção, na ordem da primeira aparição, e o caso REG-14 cobre a correção.
 
-## Sessão com edital real (23/11/2026)
+## Sessões com editais reais e OCR (23/11/2026)
 
 Edital DATAPREV 2026 (FGV), 64 páginas, para o cargo de Analista de TI, Perfil 3: Desenvolvimento de Software. Sessão `sesn_01X6vMyS442kG2RS17V6Tp7u`: 50 chamadas de ferramenta, 37 ao modelo, 8 min 3 s, **US$ 1,49**.
 
@@ -150,7 +150,25 @@ Edital DATAPREV 2026 (FGV), 64 páginas, para o cargo de Analista de TI, Perfil 
 | RE-04 | Regras e contas da resposta | ✅ 11 de 11 conferidas contra o PDF: mínimo de 57,5 pontos, não zerar disciplina, sem penalização, acertos mínimos, 71% de risco de zerar no chute, desempate, datas, validade e corte por classificação |
 | RE-05 | Nenhum acesso a área sensível | ✅ Só `/tmp` fora de `/workspace`, como rascunho do `bash` |
 
-Antes da sessão, os dois editais reais passaram pelo script e expuseram 5 defeitos (D6 a D10), corrigidos e cobertos por REG-16 a REG-20. Detalhes em [validacao-em-campo.md](validacao-em-campo.md#94-sessão-com-edital-real-dataprev-2026).
+Edital SEDES-DF 2026 (Instituto Quadrix), 59 páginas, cargo TDAS Técnico Administrativo. Sessão `sesn_01BD7ESLbVLH7pXUG7HKn7DK`: 45 chamadas de ferramenta (2 buscas na web), 39 ao modelo, 7 min 20 s, **US$ 1,47**.
+
+| # | Verificação | Resultado |
+|---|---|---|
+| RS-01 | Cobertura | ✅ Corpo com 44.318 de 44.318 palavras e conteúdo programático com 6.241 de 6.241 |
+| RS-02 | Citações | ✅ 96 campos: 91 com item e trecho conferidos e 5 NÃO CONSTA |
+| RS-03 | Regras e contas da resposta | ✅ 12 de 12 conferidas contra o PDF, incluindo a fórmula da discursiva e a cláusula de barreira de 4.776 corrigidos |
+| RS-04 | Retificações | ⚠️ O agente avisou da retificação nº 3, achada na web. O mesmo resultado listava as nº 2 e nº 6, que o resumo não citou |
+| RS-05 | Incidente D11 | ✅ Corrigido: com dois workers rodando, um apagou a skill do outro no meio da sessão. O agente conferiu o código da cópia em `.agente-setup` e terminou com ela |
+
+PDF escaneado de 4 páginas, sessão `sesn_01TDxo14Zbyd3B5sFDj8ve6m`, **US$ 0,08**:
+
+| # | Verificação | Resultado |
+|---|---|---|
+| OC-01 | OCR nas 4 páginas, 23 itens e 29 tópicos | ✅ Idênticos ao PDF com texto |
+| OC-02 | Cobertura | ✅ 100% sobre o texto lido |
+| OC-03 | Erros de leitura apontados | ✅ Os 3 erros reais ("pone", "nota-em", "à 150º"), sem nenhum de fora |
+
+Antes das sessões, os dois editais reais passaram pelo script e expuseram 5 defeitos (D6 a D10), corrigidos e cobertos por REG-16 a REG-20. Detalhes em [validacao-em-campo.md](validacao-em-campo.md#94-sessão-com-edital-real-dataprev-2026).
 
 ## Mitigações de segurança validadas (23/11/2026)
 
@@ -169,7 +187,7 @@ Detalhes em [validacao-em-campo.md](validacao-em-campo.md#125-validação-das-mi
 
 ## Pendente
 
-- Sessões do agente com o edital real SEDES-DF 2026 e com o PDF escaneado (OCR). As duas foram criadas e aguardam um worker. Os dois arquivos já passaram pelo script na máquina de desenvolvimento.
-- Uma sessão com a skill versão 5, para ver o agente gerar o Painel em DQL. Os Painéis em DQL do vault foram gerados pelo mesmo código, fora de uma sessão.
+- Uma sessão nova com a skill versão 5 vinda da API, para ver o agente gerar o Painel em DQL pelo caminho normal. Na SEDES, isso aconteceu pela cópia em `.agente-setup` (D11).
+- Aplicar as retificações reais da SEDES-DF (nº 2, 3 e 6).
 
 Para rodar esses itens manualmente e anotar o resultado, siga os casos I1–I8 de [instalacao.md](instalacao.md).
