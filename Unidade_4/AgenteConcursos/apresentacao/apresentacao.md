@@ -94,7 +94,7 @@ Achado real: ligadura "ﬁ" do PDF quebrava citações corretas (corrigido)
 ## Conclusão
 
 **Vantagens:** fidelidade comprovável · estudo num lugar só · custo baixo (US$ 0,27 medido no edital de teste; ~US$ 1 estimado por edital real)
-**Limitações:** validado só com edital fictício (Managed Agents em beta) · tabelas/OCR exigem conferência · heurísticas
+**Limitações:** validado só com edital fictício (Managed Agents em beta) · tabelas/OCR exigem conferência · heurísticas · nota com `dataviewjs` roda no Windows (risco confirmado no teste)
 
 **Próximos passos:** incidência real por tópico · avaliação automática da ficha (*evals*) · checagem semanal de retificações
 

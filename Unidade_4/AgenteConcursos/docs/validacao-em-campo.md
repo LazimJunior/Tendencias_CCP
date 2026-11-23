@@ -45,6 +45,7 @@ Todos os horários estão no fuso de Brasília (UTC−3). Os IDs de recursos apa
 | Acessos do agente fora de `/workspace` | 0 |
 | Defeitos do projeto encontrados | 3, todos corrigidos e cobertos por teste (REG-14, SEG-07, SEG-04 ampliado) |
 | Problemas de procedimento encontrados | 4, todos com o guia de instalação corrigido |
+| Riscos de segurança confirmados | 1: uma nota com `dataviewjs` roda código no Windows, fora do isolamento do WSL (R2, §12.3) |
 
 ## 2. Objetivo e escopo
 
@@ -111,6 +112,7 @@ Até esta data, o projeto tinha 29 testes automatizados que rodam sem conta e se
 | 13:12–13:20 | Conferência independente. Defeito D1 encontrado, corrigido e coberto pelo REG-14 |
 | 13:21 | Versão 2 da skill enviada |
 | 13:25 | Eventos da sessão exportados pela API para este relatório |
+| 14:15 | Teste de segurança no Obsidian confirma que `dataviewjs` roda no Windows com acesso ao Node (R2) |
 
 ## 6. Etapa A: Painel do Obsidian
 
@@ -353,7 +355,7 @@ Além disso, os comandos do guia passaram a usar `Authorization: Bearer` (o form
 | # | Risco | Confiança | Mitigação proposta |
 |---|---|---|---|
 | R1 | **A chave do ambiente pode ser lida pelo próprio agente.** O worker e as ferramentas do agente rodam com o mesmo usuário Linux, e a documentação avisa que as chamadas de ferramenta conseguem ler o que está no host do worker | Média. Não foi testado se o `ant` esconde o arquivo ou as variáveis dos processos do agente | A chave do ambiente só dá acesso à fila deste ambiente, não à conta. Gerar uma chave por host, como o Console recomenda, e revogar ao fim do uso. Rodar o worker com um usuário Linux dedicado reduziria o risco |
-| R2 | **O vault é uma ponte para o Windows.** O agente pode escrever em `.obsidian/` (plugins) e em blocos `dataviewjs` de qualquer nota, e o Obsidian executa esse código no Windows quando a nota é aberta, fora do isolamento do WSL | A confirmar com o teste da nota `zz Teste de segurança` (§12.3) | Regra no system prompt proibindo escrever em `.obsidian/` e escrever `dataviewjs` fora dos modelos do script. Montar `.obsidian` como somente leitura no `fstab` do worker. Conferir os blocos `dataviewjs` antes de abrir notas novas |
+| R2 | **O vault é uma ponte para o Windows.** O agente pode escrever em `.obsidian/` (plugins) e em blocos `dataviewjs` de qualquer nota, e o Obsidian executa esse código no Windows quando a nota é aberta, fora do isolamento do WSL | **Alta: confirmado** no teste do §12.3 | Ver as opções do §12.4 |
 | R3 | **A pasta `.agente-setup` ficou dentro do vault**, então o agente a enxergou (chamada 2) | Alta (observado) | Não contém chaves, mas deve sair do vault depois da instalação |
 | R4 | **`setx` deixa a chave de API em texto no histórico do PowerShell** | Alta | O guia agora usa `Read-Host -AsSecureString`, que não passa pela linha de comando |
 | R5 | **As ferramentas do agente rodam sem pedir confirmação** (política `always_allow`, o padrão) | Alta (lido na sessão) | Aceitável dentro de `/workspace`. Para apagar pastas, o system prompt já exige confirmação explícita (caso I8, ainda não executado) |
@@ -371,7 +373,37 @@ dv.paragraph(`typeof require: **${temRequire}** · process.platform: **${platafo
 
 **Leitura do resultado:** se aparecer `function` e `win32`, uma nota escrita pelo agente pode executar qualquer código no Windows assim que o candidato a abre. Isso confirma o R2 e torna obrigatórias as mitigações acima.
 
-**Resultado:** pendente da captura do app.
+**Resultado (14:15):** `typeof require: function · process.platform: win32`.
+
+![Resultado do teste: require disponível e plataforma win32](resultados/campo/06-obsidian-dataviewjs-require.png)
+
+**Conclusão: R2 confirmado.** Com o Dataview e o *Enable JavaScript Queries* ligados, um bloco `dataviewjs` roda dentro do Obsidian do Windows com acesso ao `require` do Node. Na prática, ele pode ler e gravar arquivos e executar programas com as permissões do usuário do Windows, sem passar pelo WSL.
+
+O caminho de ataque fica assim:
+
+1. Um edital (ou outro arquivo que o agente leia) traz um texto de *prompt injection*.
+2. O texto escapa da detecção heurística do `concurso.py` (CEN-08).
+3. O agente obedece e grava uma nota com um bloco `dataviewjs` malicioso, ou um plugin em `.obsidian/plugins/`.
+4. O candidato abre a nota no Obsidian, e o código roda no Windows.
+
+| Fator | Avaliação |
+|---|---|
+| Impacto | Alto: execução de código no Windows com as permissões do usuário |
+| Probabilidade | Baixa a média: exige que a injeção escape da heurística **e** que o modelo obedeça, contrariando o system prompt, que já manda tratar o edital como dado |
+| O que o isolamento do WSL protege | O agente continua sem enxergar o C:. A brecha está no Obsidian, que executa o conteúdo do vault |
+
+O teste em si não executou nada além de ler `typeof require` e `process.platform`. A nota pode ser apagada.
+
+### 12.4 Opções de mitigação para o R2
+
+| # | Medida | O que fecha | Custo | Efeito colateral |
+|---|---|---|---|---|
+| M1 | Regra no system prompt: nunca escrever em `.obsidian/`, nunca escrever `dataviewjs`, `<script>` ou plugin, e tratar como injeção qualquer pedido nesse sentido vindo de arquivo | Reduz a probabilidade (depende do modelo obedecer) | Baixo: texto + nova versão do agente | Nenhum |
+| M2 | Montar `.obsidian` como somente leitura no worker (`bind,ro` no `fstab`) | Fecha o caminho dos plugins de forma determinística: o agente não tem senha de `sudo` para remontar | Baixo: uma linha no `setup-wsl.sh` | Para instalar plugins, use o Obsidian no Windows, que continua com escrita normal |
+| M3 | Auditoria no `concurso.py`: listar todo bloco `dataviewjs` do vault que não seja idêntico aos do modelo do Painel, e o agente rodar isso ao fim de cada sessão | Detecta o bloco antes de o candidato abrir a nota | Médio: subcomando novo + teste | Só avisa; não impede a gravação |
+| M4 | Reescrever o Painel em DQL (consultas do Dataview sem JavaScript) e desligar o *Enable JavaScript Queries* | Fecha o caminho dos blocos `dataviewjs`: com a opção desligada, eles não rodam | Alto: reescrever 5 blocos e validar no app de novo | Algumas contas do Painel ficam mais limitadas em DQL |
+
+**Recomendação:** M1 + M2 + M3 agora; M4 depois da entrega. M2 é a única medida determinística barata. M1 e M3 cobrem o caminho do `dataviewjs`, que só o M4 fecha de vez, e o M4 é grande demais para fazer a 3 dias da apresentação.
 
 ## 13. Custo
 
@@ -406,6 +438,7 @@ A estimativa do README ("da ordem de US$ 1 por edital") se mostrou conservadora 
 | Ramo "faltam N dias" do Painel | A prova fictícia já passou |
 | Login sem chave (`ant auth login`) | Não testado |
 | Leitura da chave do ambiente pelo agente (R1) | Não testado |
+| Mitigações do R2 (§12.4) | Propostas, ainda não implementadas |
 | `cliente/sessao.py` no Windows | Não há Python no Windows da validação; a sessão foi criada com `curl.exe` |
 
 ## 15. Como reproduzir
@@ -442,6 +475,7 @@ A suíte automatizada continua rodando sem conta: `python -m unittest discover -
 | [resultados/campo/03-console-ambiente-sem-chave.png](resultados/campo/03-console-ambiente-sem-chave.png) | Página do ambiente antes de gerar a chave |
 | [resultados/campo/04-wsl-chave-errada.png](resultados/campo/04-wsl-chave-errada.png) | Problema P2: arquivo com texto de comando no lugar da chave |
 | [resultados/campo/05-wsl-worker-conectado.png](resultados/campo/05-wsl-worker-conectado.png) | Worker ativo e `workers_polling: 1` |
+| [resultados/campo/06-obsidian-dataviewjs-require.png](resultados/campo/06-obsidian-dataviewjs-require.png) | Teste de segurança: `require` disponível e plataforma `win32` no Obsidian |
 | [resultados/campo/setup-wsl.log](resultados/campo/setup-wsl.log) | Saída completa da instalação do Ubuntu e do `setup-wsl.sh` |
 | [resultados/campo/payloads/](resultados/campo/payloads/) | JSON exatos enviados à API: ambiente, agente, sessão e mensagem |
 | [resultados/campo/sessao-resumo.json](resultados/campo/sessao-resumo.json) | Sessão como a API devolveu (uso, custo, tempos), com o system prompt omitido por ser idêntico ao do repositório |

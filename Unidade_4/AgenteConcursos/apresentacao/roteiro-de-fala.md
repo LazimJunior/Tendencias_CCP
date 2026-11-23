@@ -40,6 +40,7 @@
 
 ## Slide 8: Conclusão (40 s)
 - Vantagens e limitações, com honestidade: a sessão real rodou com um edital fictício e achou um defeito de formatação, já corrigido. Falta testar editais reais e PDFs escaneados.
+- Risco que o próprio teste revelou: uma nota com JavaScript roda no Windows, fora do isolamento do WSL. Mostrar o print do teste e as mitigações propostas. É o ponto de ética: o isolamento planejado tinha uma brecha, e ela foi medida e documentada em vez de escondida.
 - **Fechamento:** "IA confiável não é a que acerta sempre: é a que prova quando acertou."
 
 ---

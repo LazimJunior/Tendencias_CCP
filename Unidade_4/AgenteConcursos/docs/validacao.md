@@ -121,5 +121,6 @@ Sessão `sesn_01NjucVhopBAyHbvnmw1FWfK`: 18 chamadas de ferramenta, 13 chamadas 
 
 - OCR de PDF escaneado com `tesseract-ocr-por` (instalado no worker, ainda sem um PDF escaneado de teste).
 - Edital real de concurso, além do fictício.
+- Mitigações do risco R2 (uma nota com `dataviewjs` roda código no Windows), confirmado no teste de segurança de 23/11. Opções em [validacao-em-campo.md](validacao-em-campo.md#124-opções-de-mitigação-para-o-r2).
 
 Para rodar esses itens manualmente e anotar o resultado, siga os casos I1–I8 de [instalacao.md](instalacao.md).

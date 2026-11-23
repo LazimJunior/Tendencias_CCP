@@ -392,6 +392,7 @@ Além desses dez, 21 casos cobrem as regras de cada camada (REG-01 a REG-14) e a
 1. **Validação em um cenário só:** a integração rodou num notebook com um edital fictício. Managed Agents está em beta, e ainda falta testar editais reais e PDFs escaneados.
 2. **Tabelas e PDFs escaneados:** quadros de vagas e de cronograma quebram na extração, e o OCR erra caracteres. Os dois exigem conferência humana.
 3. **Heurísticas:** a detecção de injeção e o reconhecimento de cabeçalhos usam padrões. Casos atípicos podem passar ou gerar falso positivo. A cobertura garante o texto, não a hierarquia.
+4. **O vault é uma ponte para o Windows (risco confirmado):** com o Dataview executando JavaScript, uma nota com bloco `dataviewjs` roda no Windows com acesso ao Node, fora do isolamento do WSL. Se uma injeção escapar da heurística e o agente obedecer, o código roda quando o candidato abrir a nota. As mitigações estão em [docs/validacao-em-campo.md](docs/validacao-em-campo.md#124-opções-de-mitigação-para-o-r2).
 
 ## 16. Próximos passos
 
