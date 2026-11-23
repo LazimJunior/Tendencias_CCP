@@ -33,13 +33,14 @@
 - Vieses: regras da banca só do edital, estimativas marcadas, questões rotuladas.
 
 ## Slide 7: Testes (1 min 30 s)
-- 29 testes automatizados, todos aprovados, sem precisar de conta nem internet.
-- Teste de mutação: desligamos cada proteção de propósito e a suíte detectou as 6. Na primeira rodada uma passou, e isso gerou um teste novo.
+- 33 testes automatizados, todos aprovados, sem precisar de conta nem internet.
+- Teste de mutação: desligamos cada proteção de propósito e a suíte detectou as 7. Na primeira rodada uma passou, e isso gerou um teste novo.
 - Achado real: a ligadura "ﬁ" do PDF fazia citações corretas falharem. A demonstração encontrou o problema antes de um edital real encontrar.
 - (Opcional, 30 s) Demonstração ao vivo: `python demo/demo.py`.
 
 ## Slide 8: Conclusão (40 s)
-- Vantagens e limitações, com honestidade: a integração com o Console ainda não foi validada numa sessão real.
+- Vantagens e limitações, com honestidade: a sessão real rodou com um edital fictício e achou um defeito de formatação, já corrigido. Falta testar editais reais e PDFs escaneados.
+- Risco que o próprio teste revelou: uma nota com JavaScript roda no Windows, fora do isolamento do WSL. Mostrar o print do teste. Depois, mostrar a sessão de ataque controlado: o agente recusou criar código mesmo a pedido do usuário, não obedeceu ao edital com injeção e a auditoria apontou a nota suspeita. É o ponto de ética: o isolamento planejado tinha uma brecha, e ela foi medida, mitigada e documentada em vez de escondida.
 - **Fechamento:** "IA confiável não é a que acerta sempre: é a que prova quando acertou."
 
 ---
@@ -59,7 +60,7 @@ Porque o estado do estudo está no Obsidian. Rodando local, o agente lê e grava
 Ele é instruído a nunca apagar sem confirmação, o script não sobrescreve progresso e o WSL não enxerga o resto do disco.
 
 **Quanto custa?**
-Na tabela atual, da ordem de US$ 1 por edital analisado com o Sonnet 5.5. A extração pesada roda no script, sem tokens. Cada sessão tem teto de gasto.
+Na tabela atual, da ordem de US$ 1 por edital analisado com o Sonnet 5.5. Na sessão real de validação, o edital fictício de 4 páginas custou US$ 0,27. A extração pesada roda no script, sem tokens. Cada sessão tem teto de gasto.
 
 **Funciona com qualquer banca?**
 O formato muda entre bancas, por isso os testes cobrem editais numerados, sem numeração e com anexos. Regras específicas (penalização, alternativas) sempre vêm do edital, nunca de suposição sobre a banca.

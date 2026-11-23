@@ -13,12 +13,13 @@ Agente de IA construído no **Claude Console (Managed Agents)**. Ele lê o edita
 
 | Componente | Estado | Comprovação |
 |---|---|---|
-| Núcleo determinístico (`concurso.py`): extração, segmentação, cobertura, citações, retificação e exportações | ✅ Testado | 29/29 testes passando ([log](docs/resultados/testes.log)) |
+| Núcleo determinístico (`concurso.py`): extração, segmentação, cobertura, citações, retificação e exportações | ✅ Testado | 33/33 testes passando ([log](docs/resultados/testes.log)) |
 | Demonstração ponta a ponta, sem IA | ✅ Executada | [log](docs/resultados/demo.log) |
-| Teste de mutação | ✅ Executado | 6/6 defeitos detectados ([log](docs/resultados/mutacao.log)) |
-| Agente no Console (system prompt, skill, ambiente) | ⚠️ Pronto, sem sessão real | Requer chave de API. Managed Agents está em beta |
-| Worker self-hosted no WSL | ⚠️ Pronto, não validado | Falta rodar numa máquina Windows |
-| Painel do Obsidian (Dataview) | ⚠️ Parcial | JavaScript validado com Node. Renderização no app pendente |
+| Teste de mutação | ✅ Executado | 7/7 defeitos detectados ([log](docs/resultados/mutacao.log)) |
+| Agente no Console (system prompt, skill, ambiente) | ✅ Sessão real executada | Edital fictício de ponta a ponta: cobertura 100% e 27 citações conferidas ([detalhes](docs/validacao.md#sessão-real-do-agente-23112026)) |
+| Worker self-hosted no WSL | ✅ Validado | Ubuntu 26.04: vault montado, C: fora do alcance do agente, worker conectado |
+| Segurança do vault (mitigações M1–M3) | ✅ Validada em campo | Sessão de ataque controlado: 5 de 5 verificações aprovadas ([detalhes](docs/validacao-em-campo.md#125-validação-das-mitigações-na-máquina-real)) |
+| Painel do Obsidian (Dataview) | ✅ Validado no app | Obsidian 1.15.1 + Dataview 0.5.68, 8 verificações com capturas ([detalhes](docs/validacao.md#validação-no-obsidian-23112026)) |
 
 ---
 
@@ -51,15 +52,16 @@ AgenteConcursos/
 │   ├── system-prompt.md             ·  system prompt em 8 partes
 │   ├── agent.md                     ·  definição do agente (formato ant apply)
 │   ├── environment.yaml             ·  ambiente self-hosted
+│   ├── api/                         ·  JSON para criar ambiente, agente e sessão pela API
 │   └── skills/agente-concursos/
 │       ├── SKILL.md                 ·  procedimento dos módulos M1–M8
 │       └── scripts/concurso.py      ·  núcleo determinístico (CLI, 9 subcomandos)
-├── worker/setup-wsl.sh              ← prepara o Ubuntu/WSL como worker isolado
+├── worker/setup-wsl.sh              ← prepara o Ubuntu/WSL como worker isolado (cria gravar-chave.sh e iniciar-worker.sh)
 ├── cliente/sessao.py                ← chat pelo terminal com teto de gasto
 ├── vault-modelo/_perfil-estudos.md  ← perfil lido no início de cada sessão
 ├── demo/                            ← editais fictícios + execução sem IA
-├── tests/                           ← 29 casos + teste de mutação
-├── docs/                            ← instalação, engenharia de prompt, validação, logs
+├── tests/                           ← 33 casos + teste de mutação
+├── docs/                            ← instalação, engenharia de prompt, validação, validação em campo, logs
 └── apresentacao/                    ← slides (Marp) e roteiro
 ```
 
@@ -369,26 +371,30 @@ Comando: `python -m unittest discover -s tests -v`. Log em [docs/resultados/test
 | CEN-08 | Prompt injection no PDF | ✅ 2 alertas na página certa. Texto preservado como dado |
 | CEN-09 | Reexportação com progresso marcado | ✅ Nenhum `[x]` perdido |
 | CEN-10 | Mesma entrada, mesma saída | ✅ Arquivos idênticos byte a byte |
+| CEN-11 | Injeção que pede código no Obsidian, sem as palavras clássicas | ✅ Sinalizada na página certa. A versão anterior não pegava |
 
-Além desses dez, 19 casos cobrem as regras de cada camada (REG-01 a REG-13) e a configuração e segurança (SEG-01 a SEG-06). **29/29 passando.**
+Além desses onze, 22 casos cobrem as regras de cada camada (REG-01 a REG-15) e a configuração e segurança (SEG-01 a SEG-07). **33/33 passando.**
 
-**Teste de mutação:** cada proteção foi desligada, uma por vez, numa cópia do script. A suíte detectou **6 de 6 defeitos**. Na primeira rodada, a quebra da regra de numeração passou despercebida, o que levou à criação do caso REG-03.
+**Teste de mutação:** cada proteção foi desligada, uma por vez, numa cópia do script. A suíte detectou **7 de 7 defeitos**. Na primeira rodada, a quebra da regra de numeração passou despercebida, o que levou à criação do caso REG-03.
 
 **Defeito real encontrado:** a primeira execução da demonstração reprovou duas citações corretas, porque o PDF usava a ligadura tipográfica "ﬁ". O problema foi corrigido e agora é coberto pelo caso REG-05.
 
-**Não executados** (dependem de conta e de máquina Windows): sessão real no Console, worker no WSL e renderização do Painel no Obsidian. Os passos para rodá-los manualmente estão em [docs/instalacao.md](docs/instalacao.md) (I1–I8).
+**Validado no Obsidian** (23/11/2026): Painel, embeds do verticalizado, marcação refletida no Painel e links da Ficha para o Edital Integral. Capturas em [docs/resultados/obsidian](docs/resultados/obsidian).
+
+**Sessão real** (23/11/2026): o agente rodou no Console com o worker no WSL, processou o edital fictício e gravou o material no vault em 1 min 42 s, por **US$ 0,27**. Cobertura 100%, citações conferidas e a pasta da demonstração intacta. A validação revelou 5 defeitos (formatação da Ficha, gravação da chave do worker, detector de chaves, injeção que pede código no Obsidian e reexecução do setup) e 1 risco de segurança confirmado (nota com `dataviewjs` roda no Windows). Todos os defeitos foram corrigidos e cobertos por teste (REG-14, SEG-07, SEG-04, CEN-11 e SEG-05), e o risco foi mitigado (REG-15). Relatório completo: **[docs/validacao-em-campo.md](docs/validacao-em-campo.md)**. Os passos para rodá-los manualmente estão em [docs/instalacao.md](docs/instalacao.md) (I1–I8).
 
 ## 15. Vantagens e limitações
 
 **Vantagens**
 1. **Fidelidade comprovável:** o candidato não precisa confiar no modelo. A cobertura prova que o verticalizado tem todo o texto do edital, e as citações provam de onde veio cada dado da ficha.
 2. **Estudo num lugar só:** checklist, prioridade, anotações, questões, erros e revisões vivem no mesmo vault, atualizados pelo agente e pelo candidato.
-3. **Custo baixo e previsível:** a parte pesada roda no script, sem tokens. Pela tabela de preços (Sonnet 5.5 a US$ 2/US$ 10 por milhão de tokens, sessão a US$ 0,08 por hora ativa), a estimativa é da ordem de US$ 1 por edital, com teto por sessão.
+3. **Custo baixo e previsível:** a parte pesada roda no script, sem tokens. Pela tabela de preços (Sonnet 5.5 a US$ 2/US$ 10 por milhão de tokens, sessão a US$ 0,08 por hora ativa), a estimativa é da ordem de US$ 1 por edital, com teto por sessão. Medido na validação em campo: US$ 0,27 para o edital fictício de 4 páginas (edital real ainda sem medição).
 
 **Limitações**
-1. **Integração não validada:** Managed Agents está em beta, e a sessão real, o worker no WSL e o Painel no Obsidian ainda não foram executados.
+1. **Validação em um cenário só:** a integração rodou num notebook com um edital fictício. Managed Agents está em beta, e ainda falta testar editais reais e PDFs escaneados.
 2. **Tabelas e PDFs escaneados:** quadros de vagas e de cronograma quebram na extração, e o OCR erra caracteres. Os dois exigem conferência humana.
 3. **Heurísticas:** a detecção de injeção e o reconhecimento de cabeçalhos usam padrões. Casos atípicos podem passar ou gerar falso positivo. A cobertura garante o texto, não a hierarquia.
+4. **O vault é uma ponte para o Windows (risco confirmado):** com o Dataview executando JavaScript, uma nota com bloco `dataviewjs` roda no Windows com acesso ao Node, fora do isolamento do WSL. Se uma injeção escapar da heurística e o agente obedecer, o código roda quando o candidato abrir a nota. Três mitigações foram implementadas: regra no system prompt, `.obsidian` somente leitura para o agente e o subcomando `auditar`. O caminho dos blocos `dataviewjs` só fecha de vez com um Painel sem JavaScript (próximo passo). Detalhes em [docs/validacao-em-campo.md](docs/validacao-em-campo.md#124-opções-de-mitigação-para-o-r2).
 
 ## 16. Próximos passos
 
@@ -398,17 +404,20 @@ Além desses dez, 19 casos cobrem as regras de cada camada (REG-01 a REG-13) e a
 - Agendamento (*scheduled deployments*) para verificar retificações publicadas toda semana.
 - Suporte a editais em HTML (diários oficiais).
 - Subagente dedicado a questões, com revisão cruzada do gabarito.
+- Reescrever o Painel em DQL (Dataview sem JavaScript) para poder desligar o *Enable JavaScript Queries* e fechar de vez a execução de código pelo vault (mitigação M4).
+- Rodar o worker com um usuário Linux dedicado, para que as ferramentas do agente não leiam a chave do ambiente.
 
 ## 17. Como instalar e executar
 
 Guia detalhado: **[docs/instalacao.md](docs/instalacao.md)**. Versão curta:
 
-1. Criar a chave de API no Console e enviar a skill (`agente/skills/agente-concursos`) pela API de Skills.
-2. Criar o ambiente **self-hosted** no Console e gerar a environment key.
-3. Criar o agente: `claude-sonnet-5-5`, system prompt de `agente/system-prompt.md`, agent toolset e a skill.
-4. Instalar o Ubuntu no WSL e rodar `worker/setup-wsl.sh` com o caminho do vault. Depois, `~/iniciar-worker.sh`.
-5. No Obsidian, ativar o Dataview com JavaScript Queries e copiar `vault-modelo/_perfil-estudos.md`.
-6. Conversar pelo Console ou por `cliente/sessao.py`.
+1. Criar a chave de API no Console ("Em outro lugar") e enviar a skill (`agente/skills/agente-concursos`) pela API de Skills.
+2. Criar o ambiente **self-hosted** e o agente pela API, com os modelos de `agente/api/`.
+3. Instalar o Ubuntu no WSL, rodar `worker/setup-wsl.sh` com o caminho do vault, gerar a chave do ambiente no Console e gravá-la com `~/gravar-chave.sh`. Depois, `~/iniciar-worker.sh`.
+4. No Obsidian, ativar o Dataview com JavaScript Queries e copiar `vault-modelo/_perfil-estudos.md`.
+5. Conversar pelo Console, pela API (`agente/api/sessao.json`) ou por `cliente/sessao.py`.
+
+Esse caminho foi executado de ponta a ponta em 23/11/2026. O relatório completo, com comandos, saídas, capturas, problemas e custos, está em **[docs/validacao-em-campo.md](docs/validacao-em-campo.md)**.
 
 Rodar a validação no próprio computador (sem conta):
 

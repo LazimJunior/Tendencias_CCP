@@ -147,6 +147,18 @@ class CenariosPrincipais(unittest.TestCase):
         a.rodar("extrair", a.pdf("numerado"), "-w", limpo)
         self.assertEqual(a.ler(limpo, "meta.json")["alertas_injecao"], [])
 
+    def test_CEN11_injecao_que_pede_codigo_no_obsidian(self):
+        """CEN-11 - injeção sem palavras clássicas, pedindo dataviewjs e plugin: é sinalizada e o texto fica no edital."""
+        work = self.tmp / "work-obs"
+        r = a.rodar("extrair", a.pdf("injecao_obsidian"), "-w", work)
+        self.assertEqual(r.returncode, 0)
+        self.assertIn("ALERTA DE SEGURANCA", r.stdout)
+        alertas = a.ler(work, "meta.json")["alertas_injecao"]
+        self.assertEqual({x["tipo"] for x in alertas}, {"pedido de codigo executavel no Obsidian"})
+        self.assertTrue(all(x["pagina"] == 2 for x in alertas))
+        self.assertEqual(a.rodar("segmentar", "-w", work).returncode, 0)
+        self.assertEqual(a.rodar("cobertura", "-w", work).returncode, 0)
+
     def test_CEN09_progresso_marcado_nunca_e_sobrescrito(self):
         """CEN-09 - reexportar o mesmo concurso preserva os [x] marcados e gera _atualizacao-<data>."""
         work = a.preparar("numerado", self.tmp)

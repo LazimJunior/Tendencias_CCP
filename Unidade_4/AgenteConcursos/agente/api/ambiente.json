@@ -1,0 +1,7 @@
+{
+ "name": "notebook-wsl",
+ "description": "Worker self-hosted no Ubuntu (WSL) do notebook",
+ "config": {
+  "type": "self_hosted"
+ }
+}

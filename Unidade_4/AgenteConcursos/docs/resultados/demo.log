@@ -69,6 +69,12 @@ $ concurso.py xlsx -w demo/saida/vault/.concursos-work/sefic-df-2026 --saida dem
   Planilha: demo/saida/vault/Concursos/SEFIC-DF 2026 - Analista TI/Verticalizado.xlsx (29 tópicos, 5 disciplinas)
   -> Camada 4 - planilha: OK
 
+$ concurso.py auditar demo/saida/vault
+  # Auditoria de código no vault
+  
+  ✅ Nenhum código fora do Painel em 13 notas. Plugins ativos dentro da lista permitida.
+  -> Camada 4 - auditoria de código no vault: OK
+
 Arquivos gerados no vault de exemplo:
   Concursos/SEFIC-DF 2026 - Analista TI/00 Painel.md
   Concursos/SEFIC-DF 2026 - Analista TI/01 Ficha.md

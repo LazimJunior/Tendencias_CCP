@@ -56,6 +56,7 @@ def main():
                          "--banca", "IES", "--data-prova", "2026-10-12", "--horas", "12", "--saida", VAULT / "Concursos"))
     codigos.append(etapa("Camada 4 - planilha", "xlsx", "-w", WORK, "--saida",
                          VAULT / "Concursos" / "SEFIC-DF 2026 - Analista TI" / "Verticalizado.xlsx", "--horas", "12"))
+    codigos.append(etapa("Camada 4 - auditoria de código no vault", "auditar", VAULT))
     print("\nArquivos gerados no vault de exemplo:")
     for f in sorted((VAULT / "Concursos").rglob("*")):
         if f.is_file():
