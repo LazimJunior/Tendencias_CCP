@@ -1,0 +1,7 @@
+# Ambiente onde as ferramentas do agente rodam: worker self-hosted no Ubuntu (WSL) do notebook.
+# Criar pelo Console (Environments > Create environment > Hosting: Self-hosted) ou com: ant apply environment.yaml
+# Depois de criar: Console > abrir o ambiente > Generate environment key (vai para worker/.concurso-worker.env).
+# yaml-language-server: $schema=https://platform.claude.com/schemas/ant/beta/environment.json
+name: notebook-wsl
+config:
+  type: self_hosted

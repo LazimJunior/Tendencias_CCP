@@ -1,0 +1,44 @@
+test_CEN01_edital_numerado_vira_verticalizado_integral (test_01_cenarios_principais.CenariosPrincipais.test_CEN01_edital_numerado_vira_verticalizado_integral)
+CEN-01 - edital numerado: disciplinas, tópicos e subtópicos corretos, cobertura 100%. ... ok
+test_CEN02_edital_sem_numeracao_e_com_anexos (test_01_cenarios_principais.CenariosPrincipais.test_CEN02_edital_sem_numeracao_e_com_anexos)
+CEN-02 - tópicos separados só por ponto final e anexos fora do programático: nada se perde. ... ok
+test_CEN03_dados_incompletos_sem_conteudo_programatico (test_01_cenarios_principais.CenariosPrincipais.test_CEN03_dados_incompletos_sem_conteudo_programatico)
+CEN-03 - sem conteúdo programático: o script para com orientação e não gera saída. ... ok
+test_CEN04_omissao_de_topico_pela_ia_reprova (test_01_cenarios_principais.CenariosPrincipais.test_CEN04_omissao_de_topico_pela_ia_reprova)
+CEN-04 - o modelo "esquece" um subtópico: a cobertura reprova e mostra o trecho perdido. ... ok
+test_CEN05_invencao_resumo_e_duplicacao_reprovam (test_01_cenarios_principais.CenariosPrincipais.test_CEN05_invencao_resumo_e_duplicacao_reprovam)
+CEN-05 - três formas de "deixar mais direto": inventar, resumir e duplicar. Todas reprovam. ... ok
+test_CEN06_ficha_com_citacao_invalida_reprova (test_01_cenarios_principais.CenariosPrincipais.test_CEN06_ficha_com_citacao_invalida_reprova)
+CEN-06 - ficha: valor divergente, item inexistente e trecho parafraseado reprovam; "NÃO CONSTA" é aceito. ... ok
+test_CEN07_retificacao_aplicada_com_log_e_idempotente (test_01_cenarios_principais.CenariosPrincipais.test_CEN07_retificacao_aplicada_com_log_e_idempotente)
+CEN-07 - retificação: aplica onde-se-lê/leia-se e inclusão, recusa trecho inexistente e pode ser reexecutada. ... ok
+test_CEN08_manipulacao_das_instrucoes_no_pdf (test_01_cenarios_principais.CenariosPrincipais.test_CEN08_manipulacao_das_instrucoes_no_pdf)
+CEN-08 - prompt injection dentro do edital: é sinalizado, não some do texto e não altera nada. ... ok
+test_CEN09_progresso_marcado_nunca_e_sobrescrito (test_01_cenarios_principais.CenariosPrincipais.test_CEN09_progresso_marcado_nunca_e_sobrescrito)
+CEN-09 - reexportar o mesmo concurso preserva os [x] marcados e gera _atualizacao-<data>. ... ok
+test_CEN10_mesma_entrada_mesma_saida (test_01_cenarios_principais.CenariosPrincipais.test_CEN10_mesma_entrada_mesma_saida)
+CEN-10 - consistência: o mesmo edital, processado duas vezes, gera arquivos idênticos. ... ok
+test_REG07_bloco_movido_sem_perda_e_aviso_e_nao_reprovacao (test_02_camadas_e_regras.CamadaDecisoria.test_REG07_bloco_movido_sem_perda_e_aviso_e_nao_reprovacao) ... ok
+test_REG08_copia_em_outro_cargo_nao_mascara_omissao (test_02_camadas_e_regras.CamadaDecisoria.test_REG08_copia_em_outro_cargo_nao_mascara_omissao) ... ok
+test_REG09_citacao_aceita_data_por_extenso_e_rejeita_numero_inventado (test_02_camadas_e_regras.CamadaDecisoria.test_REG09_citacao_aceita_data_por_extenso_e_rejeita_numero_inventado) ... ok
+test_REG10_comparar_lista_inclusoes_exclusoes_e_alteracoes (test_02_camadas_e_regras.CamadaDecisoria.test_REG10_comparar_lista_inclusoes_exclusoes_e_alteracoes) ... ok
+test_REG11_painel_dataview_tem_javascript_valido (test_02_camadas_e_regras.CamadaExecutiva.test_REG11_painel_dataview_tem_javascript_valido) ... ok
+test_REG12_notas_de_disciplina_tem_checklist_literal_e_pesos (test_02_camadas_e_regras.CamadaExecutiva.test_REG12_notas_de_disciplina_tem_checklist_literal_e_pesos) ... ok
+test_REG13_planilha_e_anki (test_02_camadas_e_regras.CamadaExecutiva.test_REG13_planilha_e_anki) ... ok
+test_REG01_cabecalho_e_rodape_repetidos_sao_removidos (test_02_camadas_e_regras.CamadaPerceptiva.test_REG01_cabecalho_e_rodape_repetidos_sao_removidos) ... ok
+test_REG02_armadilhas_de_numeracao_nao_quebram_topicos (test_02_camadas_e_regras.CamadaPerceptiva.test_REG02_armadilhas_de_numeracao_nao_quebram_topicos) ... ok
+test_REG03_linha_quebrada_que_comeca_com_numero_nao_vira_item (test_02_camadas_e_regras.CamadaPerceptiva.test_REG03_linha_quebrada_que_comeca_com_numero_nao_vira_item) ... ok
+test_REG04_assinatura_vira_observacao_final_sem_perda (test_02_camadas_e_regras.CamadaPerceptiva.test_REG04_assinatura_vira_observacao_final_sem_perda) ... ok
+test_REG05_ligaduras_e_caracteres_invisiveis_normalizados (test_02_camadas_e_regras.CamadaPerceptiva.test_REG05_ligaduras_e_caracteres_invisiveis_normalizados) ... ok
+test_REG06_hifenizacao_preserva_o_texto (test_02_camadas_e_regras.CamadaPerceptiva.test_REG06_hifenizacao_preserva_o_texto) ... ok
+test_SEG01_skill_respeita_o_formato_da_api (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG01_skill_respeita_o_formato_da_api) ... ok
+test_SEG02_system_prompt_tem_as_oito_partes (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG02_system_prompt_tem_as_oito_partes) ... ok
+test_SEG03_agent_md_usa_o_mesmo_system_prompt (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG03_agent_md_usa_o_mesmo_system_prompt) ... ok
+test_SEG04_repositorio_sem_credenciais (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG04_repositorio_sem_credenciais) ... ok
+test_SEG05_worker_isolado_no_wsl (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG05_worker_isolado_no_wsl) ... ok
+test_SEG06_cliente_limita_gasto_e_exportacao_nao_sai_da_pasta (test_03_seguranca_e_configuracao.SegurancaEConfiguracao.test_SEG06_cliente_limita_gasto_e_exportacao_nao_sai_da_pasta) ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 25.501s
+
+OK

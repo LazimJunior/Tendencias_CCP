@@ -1,0 +1,15 @@
+# Credenciais: nunca versionar
+.env
+.env.*
+!.env.example
+.concurso-worker.env
+claude-lock.json
+
+# Saídas geradas localmente (demo e testes)
+demo/saida/
+__pycache__/
+*.pyc
+
+# Editais e vault reais ficam no computador do usuário, não no repositório
+_editais/
+.concursos-work/
