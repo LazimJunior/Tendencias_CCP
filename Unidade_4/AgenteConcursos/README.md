@@ -17,7 +17,7 @@ Agente de IA construído no **Claude Console (Managed Agents)**. Ele lê o edita
 | Data | Atividade do guia | Valor | Onde está no projeto |
 |---|---|---|---|
 | 05/11 | Criação de agentes de IA | 1,0 | Arquitetura em 4 camadas: [§6](#6-arquitetura) e [§7](#7-camadas-do-agente). Definição do agente em [`agente/agent.md`](agente/agent.md) e [`agente/system-prompt.md`](agente/system-prompt.md) |
-| 12/11 | Chatbot e ferramentas de chatbot, com a especificação | 1,0 | Especificação e regras do agente em [`SKILL.md`](agente/skills/agente-concursos/SKILL.md). Prompt e técnicas em [§9](#9-engenharia-de-prompt) e [`docs/engenharia-de-prompt.md`](docs/engenharia-de-prompt.md). Ferramenta: Claude Console (Managed Agents), com worker no WSL ([`docs/instalacao.md`](docs/instalacao.md)) |
+| 12/11 | Chatbot e ferramentas de chatbot, com a especificação | 1,0 | **[Especificação do chatbot](docs/especificacao-do-chatbot.md)**: personas, requisitos, intenções, fluxo da conversa e UX writing. Regras do agente em [`SKILL.md`](agente/skills/agente-concursos/SKILL.md). Prompt e técnicas em [§9](#9-engenharia-de-prompt) e [`docs/engenharia-de-prompt.md`](docs/engenharia-de-prompt.md). Ferramenta: Claude Console (Managed Agents), com worker no WSL ([`docs/instalacao.md`](docs/instalacao.md)) |
 | 19/11 | Viés algorítmico e responsabilidade social | 1,0 | [§11 Privacidade](#11-privacidade-segurança-e-lgpd), [§12 Vieses](#12-vieses-e-como-foram-tratados) e [§13 Supervisão humana](#13-supervisão-humana-e-transparência). Riscos e mitigações testados em campo em [`validacao-em-campo.md` §12](docs/validacao-em-campo.md#12-segurança) |
 | 26/11 | Apresentação do projeto de solução inteligente | 1,0 | [`apresentacao.pdf`](apresentacao/apresentacao.pdf) e [`roteiro-de-fala.md`](apresentacao/roteiro-de-fala.md) |
 | 26/11 | Integrar conceitos em solução aplicada: repositório na pasta da disciplina | 1,0 | Esta pasta. Testes em [`docs/validacao.md`](docs/validacao.md) e validação com editais reais em [`docs/validacao-em-campo.md`](docs/validacao-em-campo.md) |
@@ -74,7 +74,7 @@ AgenteConcursos/
 ├── vault-modelo/_perfil-estudos.md  ← perfil lido no início de cada sessão
 ├── demo/                            ← editais fictícios + execução sem IA
 ├── tests/                           ← 39 casos + teste de mutação
-├── docs/                            ← instalação, engenharia de prompt, validação, validação em campo, logs
+├── docs/                            ← especificação do chatbot, instalação, engenharia de prompt, validação, validação em campo, logs
 └── apresentacao/                    ← slides (Marp) e roteiro
 ```
 
